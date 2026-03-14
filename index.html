@@ -118,6 +118,12 @@
             <input type="password" id="authPass" placeholder="••••••••" required class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white transition-all shadow-inner">
           </div>
 
+          <div id="registerSecretWrap" class="hidden">
+            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Секретне слово</label>
+            <input type="text" id="registerSecretWord" placeholder="Наприклад: улюблена фраза" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white transition-all shadow-inner">
+            <p class="text-[11px] text-slate-400 mt-2 px-2">Потрібне тільки для реєстрації та відновлення пароля</p>
+          </div>
+
           <p id="authError" class="text-red-500 text-sm hidden text-center font-bold bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"></p>
 
           <button type="submit" id="authSubmitBtn" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand/30 transition-transform active:scale-[0.96] text-lg tracking-wide">
@@ -281,6 +287,32 @@
         </div>
 
         <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5">
+          <h3 class="font-black mb-5 text-lg text-slate-900 dark:text-white flex items-center gap-2"><span class="text-brand text-xl">🔐</span> Безпека</h3>
+          <div class="space-y-4">
+            <div class="bg-slate-50 dark:bg-black/40 p-4 rounded-2xl border border-slate-200 dark:border-white/10">
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Секретне слово</p>
+              <p id="secretStateText" class="text-sm font-bold text-slate-700 dark:text-slate-200">Статус: невідомо</p>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Поточний пароль</label>
+              <input type="password" id="securityCurrentPassword" placeholder="Ваш пароль" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Нове секретне слово</label>
+              <input type="text" id="securitySecretWord" placeholder="Введіть нове секретне слово" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white">
+            </div>
+
+            <p id="securityError" class="hidden text-red-500 text-sm text-center font-bold bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"></p>
+
+            <button type="button" id="saveSecretBtn" onclick="saveSecretWord()" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand/20 transition-transform active:scale-[0.98]">
+              Зберегти секретне слово
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5">
           <h3 class="font-black mb-5 text-lg text-slate-900 dark:text-white flex items-center gap-2"><span class="text-brand text-xl">💰</span> Тарифи</h3>
           <div class="space-y-4">
             <div class="flex justify-between items-center border-b border-slate-50 dark:border-white/5 pb-3"><span class="text-sm font-bold text-slate-600 dark:text-slate-300">Хол. Вода</span><input type="number" id="tWater" step="0.01" class="w-24 bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none text-right"></div>
@@ -338,7 +370,7 @@
 
     let authToken = localStorage.getItem('k_token') || '';
     let sessionLogin = localStorage.getItem('k_login') || '';
-    let profile = JSON.parse(localStorage.getItem('kprofile') || '{"name":"","login":"","userId":""}');
+    let profile = JSON.parse(localStorage.getItem('kprofile') || '{"name":"","login":"","userId":"","hasSecretWord":false}');
 
     const defaultTariffs = { water: 30.38, hotWater: 100.00, electroBase: 4.32, electroWinter: 2.64, winterLimit: 2000, nightCoef: 0.5, gas: 7.96 };
     const defaultPrefs = { showWater: true, showHotWater: false, showElectro: true, showGas: true, electroTwoZone: true, electroWinter: true, remindersEnabled: false, remWaterStart: 1, remWaterEnd: 5, remElectroStart: 28, remElectroEnd: 3 };
@@ -424,6 +456,12 @@
       return data;
     }
 
+    function updateSecretState() {
+      $('secretStateText').innerText = profile.hasSecretWord
+        ? 'Статус: секретне слово встановлено'
+        : 'Статус: секретне слово ще не встановлено';
+    }
+
     function getCurrentAddress() {
       return addresses.find(a => a.id === currentAddressId) || addresses[0] || null;
     }
@@ -458,7 +496,8 @@
       profile = {
         login: me.user?.login || sessionLogin,
         name: me.user?.displayName || me.user?.login || sessionLogin,
-        userId: me.user?.userId || ''
+        userId: me.user?.userId || '',
+        hasSecretWord: !!me.user?.hasSecretWord
       };
       localStorage.setItem('kprofile', JSON.stringify(profile));
       $('userGreeting').innerText = `Привіт, ${profile.name || 'користувач'}!`;
@@ -478,6 +517,7 @@
       $('authScreen').classList.add('hidden');
       $('appScreen').classList.remove('hidden');
       $('appScreen').classList.add('flex');
+      updateSecretState();
     }
 
     async function loadCurrentAddress() {
@@ -525,10 +565,10 @@
       }
     }
 
-    async function performRegister(login, password) {
+    async function performRegister(login, password, secretWord) {
       await apiFetch('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ login, password, displayName: login })
+        body: JSON.stringify({ login, password, displayName: login, secretWord })
       });
     }
 
@@ -540,9 +580,17 @@
     $('registerBtn').addEventListener('click', async () => {
       const login = $('authLogin').value.trim();
       const password = $('authPass').value.trim();
-      if (!login || !password) return showToast('Введи логін і пароль', '⚠️');
+      const secretWord = $('registerSecretWord').value.trim();
+
+      $('registerSecretWrap').classList.remove('hidden');
+
+      if (!login || !password || !secretWord) {
+        return showToast('Введи логін, пароль і секретне слово', '⚠️');
+      }
+
       try {
-        await performRegister(login, password);
+        await performRegister(login, password, secretWord);
+        $('registerSecretWord').value = '';
         showToast('Акаунт створено, тепер увійди', '🎉');
       } catch (e) {
         showToast(e.message === 'ALREADY_EXISTS' ? 'Такий логін вже існує' : e.message, '⚠️');
@@ -583,16 +631,13 @@
           body: JSON.stringify({ login })
         });
 
-        if (data.resetLink) {
-          $('forgotResultLink').value = data.resetLink;
-          $('forgotResultWrap').classList.remove('hidden');
-          showToast('Reset link створено', '🔗');
-        } else {
-          $('forgotError').innerText = 'Лінк не створено';
-          $('forgotError').classList.remove('hidden');
-        }
-      } catch (e) {
-        $('forgotError').innerText = e.message;
+        $('forgotResultLink').value = data.resetLink || '';
+        $('forgotResultWrap').classList.remove('hidden');
+      } catch (error) {
+        $('forgotError').innerText =
+          error.message === 'NOT_FOUND' ? 'Користувача не знайдено' :
+          error.message === 'MISSING_LOGIN' ? 'Введи логін' :
+          error.message;
         $('forgotError').classList.remove('hidden');
       } finally {
         btn.disabled = false;
@@ -601,20 +646,60 @@
     };
 
     window.copyResetLink = async function() {
-      const val = $('forgotResultLink').value.trim();
-      if (!val) return;
-      try {
-        await navigator.clipboard.writeText(val);
-        showToast('Скопійовано', '📋');
-      } catch {
-        showToast('Не вдалося скопіювати', '⚠️');
-      }
+      const text = $('forgotResultLink').value.trim();
+      if (!text) return;
+      await navigator.clipboard.writeText(text);
+      showToast('Посилання скопійовано', '📋');
     };
 
     window.openResetLink = function() {
-      const val = $('forgotResultLink').value.trim();
-      if (!val) return;
-      window.open(val, '_blank');
+      const link = $('forgotResultLink').value.trim();
+      if (!link) return;
+      window.open(link, '_blank');
+    };
+
+    async function saveSecretWordRequest(password, secretWord) {
+      return apiFetch('/api/auth/set-secret-word', {
+        method: 'POST',
+        body: JSON.stringify({ password, secretWord })
+      });
+    }
+
+    window.saveSecretWord = async function() {
+      const password = $('securityCurrentPassword').value.trim();
+      const secretWord = $('securitySecretWord').value.trim();
+      const err = $('securityError');
+      const btn = $('saveSecretBtn');
+
+      err.classList.add('hidden');
+
+      if (!password || !secretWord) {
+        err.innerText = 'Введи поточний пароль і нове секретне слово';
+        err.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Збереження...';
+
+      try {
+        await saveSecretWordRequest(password, secretWord);
+        profile.hasSecretWord = true;
+        localStorage.setItem('kprofile', JSON.stringify(profile));
+        $('securityCurrentPassword').value = '';
+        $('securitySecretWord').value = '';
+        updateSecretState();
+        showToast('Секретне слово збережено', '🔐');
+      } catch (error) {
+        err.innerText =
+          error.message === 'WRONG_PASSWORD' ? 'Невірний поточний пароль' :
+          error.message === 'MISSING_FIELDS' ? 'Заповни всі поля' :
+          error.message;
+        err.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Зберегти секретне слово';
+      }
     };
 
     function renderCalcCustomServices() {
@@ -650,21 +735,21 @@
     };
 
     function calculatePreview() {
-      const num = id => parseFloat($(id)?.value) || 0;
+      const num = id => parseFloat($(id)?.value || 0);
       const diff = (a, b) => Math.max(0, num(b) - num(a));
 
       const waterUsed = prefs.showWater ? diff('wPrev', 'wCur') : 0;
       const hotWaterUsed = prefs.showHotWater ? diff('hwPrev', 'hwCur') : 0;
       const dayUsed = prefs.showElectro ? diff('dPrev', 'dCur') : 0;
-      const nightUsed = (prefs.showElectro && prefs.electroTwoZone) ? diff('nPrev', 'nCur') : 0;
+      const nightUsed = prefs.showElectro && prefs.electroTwoZone ? diff('nPrev', 'nCur') : 0;
       const gasUsed = prefs.showGas ? diff('gPrev', 'gCur') : 0;
 
       const isWinter = $('isWinterInput').checked;
-      const electroTariff = (prefs.electroWinter && isWinter) ? Number(tariffs.electroWinter || 0) : Number(tariffs.electroBase || 0);
+      const electroTariff = prefs.electroWinter && isWinter ? Number(tariffs.electroWinter || 0) : Number(tariffs.electroBase || 0);
 
       let customCost = 0;
       customServices.forEach(srv => {
-        const el = $(`custom_${srv.id}`);
+        const el = $('custom_' + srv.id);
         let v = parseFloat(el?.value);
         if (isNaN(v)) v = parseFloat(srv.defaultSum || 0) || 0;
         customCost += v;
@@ -672,28 +757,32 @@
 
       currentCalc.waterCost = waterUsed * Number(tariffs.water || 0);
       currentCalc.hotWaterCost = hotWaterUsed * Number(tariffs.hotWater || 0);
-      currentCalc.electroCost = (dayUsed * electroTariff) + (nightUsed * electroTariff * Number(tariffs.nightCoef || 0.5));
+      currentCalc.electroCost = dayUsed * electroTariff + nightUsed * electroTariff * Number(tariffs.nightCoef || 0.5);
       currentCalc.gasCost = gasUsed * Number(tariffs.gas || 0);
       currentCalc.customCost = customCost;
       currentCalc.total = currentCalc.waterCost + currentCalc.hotWaterCost + currentCalc.electroCost + currentCalc.gasCost + currentCalc.customCost;
 
-      $('waterCostDisplay').innerText = `${fmt.format(currentCalc.waterCost)} ₴`;
-      $('hotWaterCostDisplay').innerText = `${fmt.format(currentCalc.hotWaterCost)} ₴`;
-      $('electroCostDisplay').innerText = `${fmt.format(currentCalc.electroCost)} ₴`;
-      $('gasCostDisplay').innerText = `${fmt.format(currentCalc.gasCost)} ₴`;
-      $('customCostDisplay').innerText = `${fmt.format(currentCalc.customCost)} ₴`;
+      $('waterCostDisplay').innerText = fmt.format(currentCalc.waterCost) + ' ₴';
+      $('hotWaterCostDisplay').innerText = fmt.format(currentCalc.hotWaterCost) + ' ₴';
+      $('electroCostDisplay').innerText = fmt.format(currentCalc.electroCost) + ' ₴';
+      $('gasCostDisplay').innerText = fmt.format(currentCalc.gasCost) + ' ₴';
+      $('customCostDisplay').innerText = fmt.format(currentCalc.customCost) + ' ₴';
       $('heroTotal').innerHTML = `${fmt.format(currentCalc.total)} <span class="text-2xl font-bold text-white/50">₴</span>`;
 
-      $('wDiffBadge').innerText = `${waterUsed} м³`;
-      $('hwDiffBadge').innerText = `${hotWaterUsed} м³`;
-      $('dDiffBadge').innerText = `${dayUsed} кВт`;
-      $('nDiffBadge').innerText = `${nightUsed} кВт`;
-      $('gDiffBadge').innerText = `${gasUsed} м³`;
+      $('wDiffBadge').innerText = waterUsed + ' м³';
+      $('hwDiffBadge').innerText = hotWaterUsed + ' м³';
+      $('dDiffBadge').innerText = dayUsed + ' кВт';
+      $('nDiffBadge').innerText = nightUsed + ' кВт';
+      $('gDiffBadge').innerText = gasUsed + ' м³';
     }
 
     function fillPreviousReadings() {
-      ['wPrev','wCur','hwPrev','hwCur','dPrev','dCur','nPrev','nCur','gPrev','gCur'].forEach(id => { if ($(id)) $(id).value = ''; });
+      ['wPrev','wCur','hwPrev','hwCur','dPrev','dCur','nPrev','nCur','gPrev','gCur'].forEach(id => {
+        if ($(id)) $(id).value = '';
+      });
+
       document.querySelectorAll('.custom-srv-input').forEach(el => el.value = '');
+
       if (!records.length) return;
 
       const lr = [...records].sort((a, b) => b.month.localeCompare(a.month))[0];
@@ -709,7 +798,7 @@
       $('gCur').value = lr.gCur || '';
 
       customServices.forEach(srv => {
-        const el = $(`custom_${srv.id}`);
+        const el = $('custom_' + srv.id);
         if (!el) return;
         if (lr.customData && lr.customData[srv.id]) el.value = lr.customData[srv.id].val;
         else if (srv.defaultSum) el.value = srv.defaultSum;
@@ -719,21 +808,21 @@
     async function saveCurrentRecord() {
       const month = $('monthInput').value;
       const data = {
-        wPrev: parseFloat($('wPrev').value) || 0,
-        wCur: parseFloat($('wCur').value) || 0,
-        hwPrev: parseFloat($('hwPrev').value) || 0,
-        hwCur: parseFloat($('hwCur').value) || 0,
-        dPrev: parseFloat($('dPrev').value) || 0,
-        dCur: parseFloat($('dCur').value) || 0,
-        nPrev: parseFloat($('nPrev').value) || 0,
-        nCur: parseFloat($('nCur').value) || 0,
-        gPrev: parseFloat($('gPrev').value) || 0,
-        gCur: parseFloat($('gCur').value) || 0,
+        wPrev: parseFloat($('wPrev').value || 0),
+        wCur: parseFloat($('wCur').value || 0),
+        hwPrev: parseFloat($('hwPrev').value || 0),
+        hwCur: parseFloat($('hwCur').value || 0),
+        dPrev: parseFloat($('dPrev').value || 0),
+        dCur: parseFloat($('dCur').value || 0),
+        nPrev: parseFloat($('nPrev').value || 0),
+        nCur: parseFloat($('nCur').value || 0),
+        gPrev: parseFloat($('gPrev').value || 0),
+        gCur: parseFloat($('gCur').value || 0),
         customData: {}
       };
 
       customServices.forEach(srv => {
-        const el = $(`custom_${srv.id}`);
+        const el = $('custom_' + srv.id);
         let v = parseFloat(el?.value);
         if (isNaN(v)) v = parseFloat(srv.defaultSum || 0) || 0;
         if (v) data.customData[srv.id] = { name: srv.name, val: v };
@@ -741,11 +830,7 @@
 
       await apiFetch(`/api/addresses/${currentAddressId}/records/${month}`, {
         method: 'PUT',
-        body: JSON.stringify({
-          data,
-          totals: currentCalc,
-          paid: false
-        })
+        body: JSON.stringify({ data, totals: currentCalc, paid: false })
       });
 
       await loadAddressRecords(currentAddressId);
@@ -759,9 +844,9 @@
       try {
         await saveCurrentRecord();
         showToast('Збережено!', '✅');
-        switchTab('tabHistory');
-      } catch (e2) {
-        showToast(e2.message, '⚠️');
+        switchTab('tabHistory', 1);
+      } catch {
+        showToast('Помилка збереження', '⚠️');
       }
     });
 
@@ -769,7 +854,7 @@
       const container = $('chartContainer');
       const recent = sortedRecords.slice(0, 6).reverse();
       if (!recent.length) {
-        container.innerHTML = '<span class="text-sm text-slate-400 m-auto absolute inset-0 flex items-center justify-center">Ще немає даних</span>';
+        container.innerHTML = '<span class="text-sm text-slate-400 m-auto absolute inset-0 flex items-center justify-center">Немає записів</span>';
         return;
       }
       const max = Math.max(...recent.map(r => r.total), 1);
@@ -787,8 +872,8 @@
     }
 
     function renderRecords() {
-      const sorted = [...records].sort((a,b) => b.month.localeCompare(a.month));
-      $('statsAvg').innerText = sorted.length ? `${fmt.format(sorted.reduce((s, r) => s + r.total, 0) / sorted.length)} ₴` : '0 ₴';
+      const sorted = [...records].sort((a, b) => b.month.localeCompare(a.month));
+      $('statsAvg').innerText = sorted.length ? fmt.format(sorted.reduce((s, r) => s + r.total, 0) / sorted.length) + ' ₴' : '0 ₴';
       renderChart(sorted);
 
       $('recordsList').innerHTML = sorted.map(rec => `
@@ -796,20 +881,20 @@
           <div class="flex justify-between items-center mb-3">
             <div>
               <h4 class="font-bold text-xl text-slate-900 dark:text-white">${rec.month}</h4>
-              <div class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg inline-block ${rec.paid ? 'bg-brand-light text-brand' : 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400'}">${rec.paid ? 'Оплачено' : 'Борг'}</div>
+              <div class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg inline-block ${rec.paid ? 'bg-brand-light text-brand' : 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400'}">${rec.paid ? 'Оплачено' : 'Не оплачено'}</div>
             </div>
             <span class="font-black text-2xl text-slate-900 dark:text-white">${fmt.format(rec.total)} ₴</span>
           </div>
           <div class="space-y-1 text-sm">
-            ${rec.waterCost ? `<div class="flex justify-between"><span>💧 Вода</span><span>${fmt.format(rec.waterCost)} ₴</span></div>` : ''}
-            ${rec.hotWaterCost ? `<div class="flex justify-between"><span>🌡️ Гар. вода</span><span>${fmt.format(rec.hotWaterCost)} ₴</span></div>` : ''}
-            ${rec.electroCost ? `<div class="flex justify-between"><span>⚡️ Світло</span><span>${fmt.format(rec.electroCost)} ₴</span></div>` : ''}
-            ${rec.gasCost ? `<div class="flex justify-between"><span>🔥 Газ</span><span>${fmt.format(rec.gasCost)} ₴</span></div>` : ''}
-            ${rec.customCost ? `<div class="flex justify-between"><span>📦 Інше</span><span>${fmt.format(rec.customCost)} ₴</span></div>` : ''}
+            ${rec.waterCost ? `<div class="flex justify-between"><span>Вода</span><span>${fmt.format(rec.waterCost)} ₴</span></div>` : ''}
+            ${rec.hotWaterCost ? `<div class="flex justify-between"><span>Гар. вода</span><span>${fmt.format(rec.hotWaterCost)} ₴</span></div>` : ''}
+            ${rec.electroCost ? `<div class="flex justify-between"><span>Світло</span><span>${fmt.format(rec.electroCost)} ₴</span></div>` : ''}
+            ${rec.gasCost ? `<div class="flex justify-between"><span>Газ</span><span>${fmt.format(rec.gasCost)} ₴</span></div>` : ''}
+            ${rec.customCost ? `<div class="flex justify-between"><span>Інше</span><span>${fmt.format(rec.customCost)} ₴</span></div>` : ''}
           </div>
           <div class="flex gap-2.5 mt-4 pt-2 border-t border-slate-100 dark:border-white/5">
-            <button type="button" onclick="togglePaidByMonth('${rec.month}')" class="flex-1 py-3.5 rounded-2xl font-bold text-xs border ${rec.paid ? 'bg-slate-50 text-slate-500 dark:bg-[#2c2c2e] border-transparent' : 'bg-brand text-white shadow-lg'}">${rec.paid ? 'Скасувати' : 'Позначити оплаченим'}</button>
-            <button type="button" onclick="deleteRecordByMonth('${rec.month}')" class="w-12 bg-red-50 dark:bg-red-500/10 rounded-2xl text-red-400">🗑</button>
+            <button type="button" onclick="togglePaidByMonth('${rec.month}')" class="flex-1 py-3.5 rounded-2xl font-bold text-xs border ${rec.paid ? 'bg-slate-50 text-slate-500 dark:bg-[#2c2c2e] border-transparent' : 'bg-brand text-white shadow-lg'}">${rec.paid ? 'Позначити як не оплачено' : 'Позначити як оплачено'}</button>
+            <button type="button" onclick="deleteRecordByMonth('${rec.month}')" class="w-12 bg-red-50 dark:bg-red-500/10 rounded-2xl text-red-400">🗑️</button>
           </div>
         </div>
       `).join('');
@@ -820,25 +905,25 @@
         await apiFetch(`/api/addresses/${currentAddressId}/records/${month}/paid`, { method: 'PATCH' });
         await loadAddressRecords(currentAddressId);
         renderRecords();
-      } catch (e) {
-        showToast(e.message, '⚠️');
+      } catch {
+        showToast('Помилка оновлення', '⚠️');
       }
     };
 
     window.deleteRecordByMonth = async function(month) {
-      if (!confirm('Видалити розрахунок?')) return;
+      if (!confirm('Дійсно видалити цей розрахунок?')) return;
       try {
         await apiFetch(`/api/addresses/${currentAddressId}/records/${month}`, { method: 'DELETE' });
         await loadAddressRecords(currentAddressId);
         renderRecords();
         fillPreviousReadings();
         calculatePreview();
-      } catch (e) {
-        showToast(e.message, '⚠️');
+      } catch {
+        showToast('Помилка видалення', '⚠️');
       }
     };
 
-    window.switchTab = function(tabId) {
+    window.switchTab = function(tabId, index = -1) {
       document.querySelectorAll('.tab-transition').forEach(el => {
         el.classList.remove('tab-active');
         el.classList.add('tab-hidden');
@@ -846,17 +931,22 @@
       $(tabId).classList.remove('tab-hidden');
       $(tabId).classList.add('tab-active');
 
-      document.querySelectorAll('.nav-btn').forEach(el => {
-        el.classList.remove('text-brand');
-        el.classList.add('text-slate-400', 'dark:text-slate-500');
-      });
-
-      const btnId = tabId === 'tabCalc' ? 'btnTabCalc' : tabId === 'tabHistory' ? 'btnTabHistory' : 'btnTabSettings';
-      $(btnId).classList.remove('text-slate-400', 'dark:text-slate-500');
-      $(btnId).classList.add('text-brand');
+      if (index >= 0) {
+        document.querySelectorAll('.nav-btn').forEach(el => {
+          el.classList.remove('text-brand');
+          el.classList.add('text-slate-400', 'dark:text-slate-500');
+        });
+        const btnId = tabId === 'tabCalc' ? 'btnTabCalc' : tabId === 'tabHistory' ? 'btnTabHistory' : 'btnTabSettings';
+        $(btnId).classList.remove('text-slate-400', 'dark:text-slate-500');
+        $(btnId).classList.add('text-brand');
+      }
 
       if (tabId === 'tabHistory') renderRecords();
-      if (tabId === 'tabSettings') renderSettingsCustomServices();
+      if (tabId === 'tabSettings') {
+        renderSettingsCustomServices();
+        updateSecretState();
+      }
+
       $('swipeContainer').scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -889,34 +979,38 @@
     };
 
     window.addNewAddress = async function() {
-      const name = prompt("Назва об'єкту:");
+      const name = prompt('Назва нової адреси');
       if (!name || !name.trim()) return;
+
       try {
         const data = await apiFetch('/api/addresses', {
           method: 'POST',
           body: JSON.stringify({ name: name.trim(), tariffs: defaultTariffs, prefs: defaultPrefs, customServices: defaultCustomServices })
         });
+
         addresses.push({
           id: data.address.id,
           name: data.address.name,
-          tariffs: { ...defaultTariffs, ...(data.address.tariffs || {}) },
-          prefs: { ...defaultPrefs, ...(data.address.prefs || {}) },
+          tariffs: { ...defaultTariffs, ...data.address.tariffs },
+          prefs: { ...defaultPrefs, ...data.address.prefs },
           customServices: data.address.customServices || [...defaultCustomServices]
         });
+
         currentAddressId = data.address.id;
         await loadCurrentAddress();
         closeAddressModal();
-        showToast('Додано', '✅');
-      } catch (e) {
-        showToast(e.message, '⚠️');
+        showToast('Адресу додано', '🏡');
+      } catch {
+        showToast('Помилка додавання адреси', '⚠️');
       }
     };
 
     window.editAddressName = async function(e, id) {
       e.stopPropagation();
       const addr = addresses.find(a => a.id === id);
-      const newName = prompt('Нова назва:', addr?.name || '');
+      const newName = prompt('Нова назва адреси', addr?.name || '');
       if (!newName || !newName.trim()) return;
+
       try {
         const data = await apiFetch(`/api/addresses/${id}`, {
           method: 'PATCH',
@@ -926,20 +1020,20 @@
         if (i >= 0) addresses[i].name = data.address.name;
         if (currentAddressId === id) $('currentAddressDisplay').innerText = data.address.name;
         renderAddressModal();
-      } catch (e2) {
-        showToast(e2.message, '⚠️');
+      } catch {
+        showToast('Помилка перейменування', '⚠️');
       }
     };
 
     window.saveSettings = async function() {
       tariffs = {
-        water: parseFloat($('tWater').value) || 0,
-        hotWater: parseFloat($('tHotWater').value) || 0,
-        electroBase: parseFloat($('tElectroBase').value) || 0,
-        electroWinter: parseFloat($('tElectroWinter').value) || 0,
+        water: parseFloat($('tWater').value || 0),
+        hotWater: parseFloat($('tHotWater').value || 0),
+        electroBase: parseFloat($('tElectroBase').value || 0),
+        electroWinter: parseFloat($('tElectroWinter').value || 0),
         winterLimit: defaultTariffs.winterLimit,
         nightCoef: defaultTariffs.nightCoef,
-        gas: parseFloat($('tGas').value) || 0
+        gas: parseFloat($('tGas').value || 0)
       };
 
       prefs = {
@@ -971,22 +1065,25 @@
 
         initAppUI();
         showToast('Налаштування збережено', '✅');
-      } catch (e) {
-        showToast(e.message, '⚠️');
+      } catch {
+        showToast('Помилка збереження', '⚠️');
       }
     };
 
     window.exportCSV = function() {
-      if (!records.length) return showToast('Немає даних', '⚠️');
-      let headers = ['Місяць','Всього','Статус'];
-      let csv = '\uFEFF' + headers.join(',') + '\n';
-      [...records].sort((a,b) => b.month.localeCompare(a.month)).forEach(r => {
-        csv += [r.month, r.total, r.paid ? 'Оплачено' : 'Борг'].join(',') + '\n';
+      if (!records.length) return showToast('Немає даних для експорту', '⚠️');
+
+      let headers = ['Місяць','Сума','Статус'];
+      let csv = headers.join(',') + '\n';
+
+      [...records].sort((a, b) => b.month.localeCompare(a.month)).forEach(r => {
+        csv += [r.month, r.total, r.paid ? 'Оплачено' : 'Не оплачено'].join(',') + '\n';
       });
-      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `komunalka_${currentAddressId}.csv`;
+      link.download = `komunalka-${currentAddressId}.csv`;
       link.click();
     };
 
@@ -997,7 +1094,7 @@
       localStorage.removeItem('kprofile');
       authToken = '';
       sessionLogin = '';
-      profile = { name: '', login: '', userId: '' };
+      profile = { name: '', login: '', userId: '', hasSecretWord: false };
       location.reload();
     };
 
@@ -1027,29 +1124,30 @@
       renderSettingsCustomServices();
 
       if (!$('monthInput').value) {
-        $('monthInput').value = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        const d = new Date();
+        $('monthInput').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       }
 
       fillPreviousReadings();
       calculatePreview();
       renderRecords();
-    }
+      updateSecretState();
 
-    ['wPrev','wCur','hwPrev','hwCur','dPrev','dCur','nPrev','nCur','gPrev','gCur','isWinterInput','monthInput'].forEach(id => {
-      $(id)?.addEventListener('input', calculatePreview);
-      $(id)?.addEventListener('change', calculatePreview);
-    });
+      ['wPrev','wCur','hwPrev','hwCur','dPrev','dCur','nPrev','nCur','gPrev','gCur','isWinterInput','monthInput'].forEach(id => {
+        $(id)?.addEventListener('input', calculatePreview);
+        $(id)?.addEventListener('change', calculatePreview);
+      });
+    }
 
     applyThemeMode();
     setThemeMode(currentMode);
     setThemeColor(activeThemeColor);
 
     if (authToken) {
-      bootstrapAfterLogin().catch(err => {
+      bootstrapAfterLogin().catch(() => {
         localStorage.removeItem('k_token');
         localStorage.removeItem('k_login');
         localStorage.removeItem('kprofile');
-        showToast(err.message, '⚠️');
       });
     }
   </script>
