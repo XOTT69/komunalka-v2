@@ -3,1153 +3,363 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Комуналка</title>
+  <title>Комуналка Pro</title>
+  <meta name="theme-color" content="#f4f7fb" id="metaThemeColor" />
   <link rel="manifest" href="manifest.json" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root, .theme-indigo { --brand-main: #4f46e5; --brand-hover: #4338ca; --brand-light: rgba(79, 70, 229, 0.1); --brand-border: rgba(79, 70, 229, 0.25); }
-    .theme-blue { --brand-main: #007aff; --brand-hover: #005bb5; --brand-light: rgba(0, 122, 255, 0.1); --brand-border: rgba(0, 122, 255, 0.25); }
-    .theme-violet { --brand-main: #8b5cf6; --brand-hover: #7c3aed; --brand-light: rgba(139, 92, 246, 0.1); --brand-border: rgba(139, 92, 246, 0.25); }
-    .theme-rose { --brand-main: #f43f5e; --brand-hover: #e11d48; --brand-light: rgba(244, 63, 94, 0.1); --brand-border: rgba(244, 63, 94, 0.25); }
-    .theme-zinc { --brand-main: #52525b; --brand-hover: #3f3f46; --brand-light: rgba(82, 82, 91, 0.1); --brand-border: rgba(82, 82, 91, 0.25); }
-  </style>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              DEFAULT: 'var(--brand-main)',
-              hover: 'var(--brand-hover)',
-              light: 'var(--brand-light)',
-              border: 'var(--brand-border)'
-            },
-            apple: {
-              dark: '#1c1c1e',
-              darker: '#000000',
-              light: '#f2f2f7'
-            }
-          },
-          boxShadow: {
-            soft: '0 10px 40px -10px rgba(0, 0, 0, 0.08)'
-          }
-        }
-      }
-    };
-  </script>
-  <meta name="theme-color" content="#f2f2f7" id="metaThemeColor" />
   <link rel="apple-touch-icon" href="icon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <style>
-    body, html {
-      overflow: hidden;
-      width: 100vw;
-      height: 100dvh;
-      position: fixed;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      overscroll-behavior: none;
-    }
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    input[type="number"], input[type="text"], input[type="password"] { -moz-appearance: textfield; font-family: inherit; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .spring-modal { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
-    .tab-hidden { display: none !important; opacity: 0; }
-    .tab-active { display: block !important; opacity: 1; animation: fastFade 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-    @keyframes fastFade {
-      from { opacity: 0; transform: translateY(8px) scale(0.99); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="bg-apple-light dark:bg-apple-darker text-slate-800 dark:text-slate-200 flex flex-col transition-colors duration-300 h-[100dvh] selection:bg-brand-light theme-blue">
-
-  <div id="toast" class="fixed top-[env(safe-area-inset-top,20px)] left-1/2 -translate-x-1/2 z-[300] bg-apple-darker/90 dark:bg-white/90 backdrop-blur-2xl text-white dark:text-apple-darker px-6 py-3.5 rounded-full shadow-2xl font-bold text-sm transition-all duration-300 transform -translate-y-24 opacity-0 flex items-center gap-2 pointer-events-none">
-    <span id="toastIcon">✅</span><span id="toastMsg">Повідомлення</span>
+<body class="theme-blue">
+  <div id="toast" class="toast hidden">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Повідомлення</span>
   </div>
 
-  <div id="forgotModal" class="hidden fixed inset-0 z-[250] bg-black/40 backdrop-blur-sm flex items-end justify-center" onclick="if(event.target===this) closeForgotModal()">
-    <div id="forgotModalContent" class="bg-white dark:bg-apple-dark w-full max-w-md rounded-t-[2.5rem] p-6 pb-[max(env(safe-area-inset-bottom),2rem)] spring-modal translate-y-full shadow-[0_-20px_40px_rgba(0,0,0,0.15)]">
-      <div class="w-12 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full mx-auto mb-6"></div>
-      <h3 class="font-black text-2xl text-slate-900 dark:text-white mb-2">🔐 Відновлення пароля</h3>
-      <p class="text-slate-500 text-sm mb-4">Введи свій логін, і система створить reset link</p>
-      <div class="space-y-4">
-        <input type="text" id="forgotLogin" placeholder="Ваш логін" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white" />
-        <p id="forgotError" class="hidden text-red-500 text-sm text-center font-bold bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"></p>
-        <div id="forgotResultWrap" class="hidden bg-slate-50 dark:bg-black/40 rounded-2xl p-4 border border-slate-200 dark:border-white/10">
-          <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Reset link</p>
-          <textarea id="forgotResultLink" readonly class="w-full min-h-[120px] bg-white dark:bg-[#2c2c2e] rounded-xl p-3 text-sm outline-none resize-none"></textarea>
-          <div class="grid grid-cols-2 gap-2 mt-3">
-            <button type="button" onclick="copyResetLink()" class="w-full py-3 rounded-xl bg-brand text-white font-bold">Копіювати</button>
-            <button type="button" onclick="openResetLink()" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-white/10 font-bold">Відкрити</button>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" id="forgotSubmitBtn" onclick="handleForgotPassword()" class="w-full py-4 rounded-2xl bg-brand text-white font-bold">Створити лінк</button>
-          <button type="button" onclick="closeForgotModal()" class="w-full py-4 rounded-2xl bg-slate-100 dark:bg-white/5 font-bold">Закрити</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="authScreen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center p-6 bg-apple-light dark:bg-apple-darker overflow-y-auto">
-    <div class="w-full max-w-sm py-10">
-      <div class="text-center mb-10">
-        <div class="w-24 h-24 bg-gradient-to-br from-brand to-brand-hover rounded-[2.25rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-brand/40 text-white text-5xl">⚡️</div>
-        <h1 class="text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Комуналка<span class="text-brand">.</span></h1>
-        <p class="text-slate-500 font-medium text-sm">Ваш розумний дім</p>
+  <div id="authScreen" class="screen auth-screen">
+    <div class="auth-wrap">
+      <div class="auth-brand">
+        <div class="auth-logo">₴</div>
+        <div class="auth-kicker">Finance Pro</div>
+        <h1>Комуналка Pro</h1>
+        <p>Розумний облік комунальних витрат</p>
       </div>
 
-      <div class="bg-white dark:bg-apple-dark p-8 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5 relative overflow-hidden">
-        <div class="absolute -top-20 -right-20 w-40 h-40 bg-brand-light rounded-full blur-3xl pointer-events-none"></div>
+      <div class="card auth-card">
+        <div class="card-glow"></div>
 
-        <form id="authForm" class="space-y-4 relative z-10">
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Логін</label>
-            <input type="text" id="authLogin" placeholder="Логін" required autocapitalize="none" autocorrect="off" spellcheck="false" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white transition-all shadow-inner">
+        <form id="authForm" class="form-stack">
+          <div class="field">
+            <label>Логін</label>
+            <input type="text" id="authLogin" placeholder="Ваш логін" required autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
 
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Пароль</label>
-            <input type="password" id="authPass" placeholder="••••••••" required class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white transition-all shadow-inner">
+          <div class="field">
+            <label>Пароль</label>
+            <input type="password" id="authPass" placeholder="••••••••" required />
           </div>
 
-          <div id="registerSecretWrap" class="hidden">
-            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Секретне слово</label>
-            <input type="text" id="registerSecretWord" placeholder="Наприклад: улюблена фраза" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white transition-all shadow-inner">
-            <p class="text-[11px] text-slate-400 mt-2 px-2">Потрібне тільки для реєстрації та відновлення пароля</p>
+          <p id="authError" class="error-box hidden"></p>
+
+          <div class="auth-actions">
+            <button type="submit" id="authSubmitBtn" class="btn btn-primary">Увійти</button>
+            <button type="button" id="registerBtn" class="btn btn-secondary">Реєстрація</button>
           </div>
-
-          <p id="authError" class="text-red-500 text-sm hidden text-center font-bold bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"></p>
-
-          <button type="submit" id="authSubmitBtn" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand/30 transition-transform active:scale-[0.96] text-lg tracking-wide">
-            Увійти
-          </button>
-
-          <button type="button" id="registerBtn" class="w-full bg-slate-100 dark:bg-black/40 text-slate-700 dark:text-white font-bold py-4 rounded-2xl border border-slate-200 dark:border-white/10 transition-transform active:scale-[0.96] text-lg tracking-wide">
-            Реєстрація
-          </button>
-
-          <button type="button" onclick="openForgotModal()" class="w-full text-brand font-bold py-2 text-sm">
-            Забув пароль?
-          </button>
         </form>
       </div>
     </div>
   </div>
 
-  <div id="appScreen" class="hidden flex-col h-full w-full max-w-md mx-auto relative overflow-hidden bg-apple-light dark:bg-apple-darker">
-    <div class="px-5 pt-[max(env(safe-area-inset-top),1.5rem)] pb-3 flex justify-between items-center bg-apple-light dark:bg-apple-darker z-20 shrink-0 border-b border-transparent">
-      <div class="flex items-center gap-3 cursor-pointer group" onclick="openAddressModal()" id="addressHeaderTrigger">
-        <div class="w-12 h-12 bg-gradient-to-tr from-brand to-brand-hover rounded-full flex items-center justify-center text-white shadow-lg shadow-brand/20 text-xl">🏡</div>
-        <div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest" id="userGreeting">Вітаю!</p>
-          <h2 class="text-xl font-black text-slate-900 dark:text-white leading-tight flex items-center gap-1.5">
-            <span id="currentAddressDisplay" class="truncate max-w-[170px]">Мій дім</span>
-            <svg id="addressArrowIcon" class="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+  <div id="appScreen" class="screen app-screen hidden">
+    <header class="topbar">
+      <button class="address-trigger" id="addressHeaderTrigger" onclick="openAddressModal()">
+        <div class="address-icon">⌂</div>
+        <div class="address-meta">
+          <p id="userGreeting">Вітаю!</p>
+          <h2>
+            <span id="currentAddressDisplay">Мій дім</span>
+            <span class="chevron">▾</span>
           </h2>
         </div>
-      </div>
-    </div>
+      </button>
+    </header>
 
-    <div id="swipeContainer" class="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar px-5 relative pb-[100px] w-full h-full">
-      <div id="tabCalc" class="tab-transition tab-active space-y-5">
-        <div class="bg-apple-darker p-6 rounded-[2.5rem] shadow-2xl text-white relative overflow-hidden border border-white/10 mt-2">
-          <div class="absolute top-0 right-0 w-64 h-64 bg-brand-light rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
-          <div class="relative z-10 flex flex-col justify-between h-full">
-            <div class="flex justify-between items-start mb-6">
-              <input type="month" id="monthInput" class="bg-white/10 hover:bg-white/20 transition-colors border-none outline-none font-bold text-white text-sm py-2.5 px-4 rounded-xl cursor-pointer backdrop-blur-md" required>
-              <label id="winterCheckboxWrapper" class="flex items-center space-x-2 text-xs font-bold bg-white/10 text-white px-3 py-2.5 rounded-xl cursor-pointer backdrop-blur-md hover:bg-white/20 transition-colors">
-                <input type="checkbox" id="isWinterInput" class="rounded accent-brand w-3.5 h-3.5 border-none"><span>❄️ Зима</span>
-              </label>
-            </div>
-            <div>
-              <p class="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">До сплати за місяць</p>
-              <h2 class="text-[2.75rem] font-black tracking-tighter leading-none flex items-baseline gap-1.5" id="heroTotal">0 <span class="text-2xl font-bold text-white/50">₴</span></h2>
-            </div>
+    <main id="swipeContainer" class="content no-scrollbar">
+      <section id="tabCalc" class="tab-panel tab-active">
+        <div class="hero-card">
+          <div class="hero-top">
+            <input type="month" id="monthInput" class="month-input" required />
+            <label id="winterCheckboxWrapper" class="winter-toggle">
+              <input type="checkbox" id="isWinterInput" />
+              <span>Зимовий тариф</span>
+            </label>
+          </div>
+
+          <div class="hero-bottom">
+            <p>Поточна сума до сплати</p>
+            <h1 id="heroTotal">0 <span>₴</span></h1>
           </div>
         </div>
 
-        <form id="utilityForm" class="space-y-4 pb-6">
-          <div id="blockWater" class="bg-white dark:bg-apple-dark p-5 rounded-[2rem] shadow-soft border border-slate-100 dark:border-white/5">
-            <div class="flex justify-between items-center mb-5">
-              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-blue-50 dark:bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 text-xl">💧</div><span class="font-bold text-lg text-slate-900 dark:text-white">Хол. Вода</span></div>
-              <span id="waterCostDisplay" class="font-black text-xl text-slate-900 dark:text-white">0 ₴</span>
-            </div>
-            <div class="relative flex gap-3 items-center bg-slate-50 dark:bg-black/40 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
-              <div class="flex-1"><label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1 mb-1.5">Минулі</label><input type="number" id="wPrev" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-slate-700 dark:text-slate-200 rounded-xl outline-none"></div>
-              <div class="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-apple-dark shadow-sm border border-slate-100 dark:border-white/10 px-2 py-1 rounded-lg text-[11px] font-bold text-blue-500 whitespace-nowrap" id="wDiffBadge">0 м³</div>
-              <div class="flex-1"><label class="block text-[10px] text-blue-500 font-bold uppercase tracking-wider px-1 mb-1.5 text-right">Нові</label><input type="number" id="wCur" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-blue-600 dark:text-blue-400 rounded-xl outline-none"></div>
-            </div>
-          </div>
-
-          <div id="blockHotWater" class="bg-white dark:bg-apple-dark p-5 rounded-[2rem] shadow-soft border border-slate-100 dark:border-white/5 hidden">
-            <div class="flex justify-between items-center mb-5">
-              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-red-50 dark:bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 text-xl">🌡️</div><span class="font-bold text-lg text-slate-900 dark:text-white">Гар. Вода</span></div>
-              <span id="hotWaterCostDisplay" class="font-black text-xl text-slate-900 dark:text-white">0 ₴</span>
-            </div>
-            <div class="relative flex gap-3 items-center bg-slate-50 dark:bg-black/40 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
-              <div class="flex-1"><label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1 mb-1.5">Минулі</label><input type="number" id="hwPrev" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-slate-700 dark:text-slate-200 rounded-xl outline-none"></div>
-              <div class="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-apple-dark shadow-sm border border-slate-100 dark:border-white/10 px-2 py-1 rounded-lg text-[11px] font-bold text-red-500 whitespace-nowrap" id="hwDiffBadge">0 м³</div>
-              <div class="flex-1"><label class="block text-[10px] text-red-500 font-bold uppercase tracking-wider px-1 mb-1.5 text-right">Нові</label><input type="number" id="hwCur" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-red-600 dark:text-red-400 rounded-xl outline-none"></div>
-            </div>
-          </div>
-
-          <div id="blockElectro" class="bg-white dark:bg-apple-dark p-5 rounded-[2rem] shadow-soft border border-slate-100 dark:border-white/5">
-            <div class="flex justify-between items-center mb-5">
-              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-yellow-50 dark:bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500 text-xl">⚡️</div><span class="font-bold text-lg text-slate-900 dark:text-white">Світло</span></div>
-              <span id="electroCostDisplay" class="font-black text-xl text-slate-900 dark:text-white">0 ₴</span>
-            </div>
-            <div class="space-y-3">
-              <div id="electroDayRow" class="relative flex gap-3 items-center bg-slate-50 dark:bg-black/40 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
-                <div class="flex-1"><label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1 mb-1.5">Мин <span id="lblDay1">(День)</span></label><input type="number" id="dPrev" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-slate-700 dark:text-slate-200 rounded-xl outline-none"></div>
-                <div class="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-apple-dark shadow-sm border border-slate-100 dark:border-white/10 px-2 py-1 rounded-lg text-[11px] font-bold text-yellow-500 whitespace-nowrap" id="dDiffBadge">0 кВт</div>
-                <div class="flex-1"><label class="block text-[10px] text-yellow-500 font-bold uppercase tracking-wider px-1 mb-1.5 text-right">Нові <span id="lblDay2">(День)</span></label><input type="number" id="dCur" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-yellow-600 dark:text-yellow-400 rounded-xl outline-none"></div>
+        <form id="utilityForm" class="stack-lg">
+          <div id="blockWater" class="service-card">
+            <div class="service-head">
+              <div class="service-title">
+                <div class="service-icon water">В</div>
+                <div>
+                  <h3>Холодна вода</h3>
+                  <p>Показники лічильника</p>
+                </div>
               </div>
-              <div id="electroNightRow" class="relative flex gap-3 items-center bg-slate-50 dark:bg-black/40 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
-                <div class="flex-1"><label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1 mb-1.5">Мин (Ніч)</label><input type="number" id="nPrev" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-slate-700 dark:text-slate-200 rounded-xl outline-none"></div>
-                <div class="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-apple-dark shadow-sm border border-slate-100 dark:border-white/10 px-2 py-1 rounded-lg text-[11px] font-bold text-indigo-500 whitespace-nowrap" id="nDiffBadge">0 кВт</div>
-                <div class="flex-1"><label class="block text-[10px] text-indigo-500 font-bold uppercase tracking-wider px-1 mb-1.5 text-right">Нові (Ніч)</label><input type="number" id="nCur" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-indigo-500 dark:text-indigo-400 rounded-xl outline-none"></div>
+              <div id="waterCostDisplay" class="service-sum">0 ₴</div>
+            </div>
+
+            <div class="meter-grid">
+              <div class="meter-col">
+                <label>Попередні</label>
+                <input type="number" id="wPrev" />
+              </div>
+              <div class="meter-diff" id="wDiffBadge">0 м³</div>
+              <div class="meter-col">
+                <label class="accent-blue">Поточні</label>
+                <input type="number" id="wCur" class="accent-blue" />
               </div>
             </div>
           </div>
 
-          <div id="blockGas" class="bg-white dark:bg-apple-dark p-5 rounded-[2rem] shadow-soft border border-slate-100 dark:border-white/5">
-            <div class="flex justify-between items-center mb-5">
-              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-orange-50 dark:bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500 text-xl">🔥</div><span class="font-bold text-lg text-slate-900 dark:text-white">Газ</span></div>
-              <span id="gasCostDisplay" class="font-black text-xl text-slate-900 dark:text-white">0 ₴</span>
+          <div id="blockHotWater" class="service-card hidden-block">
+            <div class="service-head">
+              <div class="service-title">
+                <div class="service-icon hot">Г</div>
+                <div>
+                  <h3>Гаряча вода</h3>
+                  <p>Показники лічильника</p>
+                </div>
+              </div>
+              <div id="hotWaterCostDisplay" class="service-sum">0 ₴</div>
             </div>
-            <div class="relative flex gap-3 items-center bg-slate-50 dark:bg-black/40 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
-              <div class="flex-1"><label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1 mb-1.5">Минулі</label><input type="number" id="gPrev" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-slate-700 dark:text-slate-200 rounded-xl outline-none"></div>
-              <div class="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 z-10 bg-white dark:bg-apple-dark shadow-sm border border-slate-100 dark:border-white/10 px-2 py-1 rounded-lg text-[11px] font-bold text-orange-500 whitespace-nowrap" id="gDiffBadge">0 м³</div>
-              <div class="flex-1"><label class="block text-[10px] text-orange-500 font-bold uppercase tracking-wider px-1 mb-1.5 text-right">Нові</label><input type="number" id="gCur" class="w-full bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-transparent p-2.5 text-center text-xl font-black text-orange-500 dark:text-orange-400 rounded-xl outline-none"></div>
+
+            <div class="meter-grid">
+              <div class="meter-col">
+                <label>Попередні</label>
+                <input type="number" id="hwPrev" />
+              </div>
+              <div class="meter-diff" id="hwDiffBadge">0 м³</div>
+              <div class="meter-col">
+                <label class="accent-red">Поточні</label>
+                <input type="number" id="hwCur" class="accent-red" />
+              </div>
             </div>
           </div>
 
-          <div id="blockCustomServices" class="bg-white dark:bg-apple-dark p-5 rounded-[2rem] shadow-soft border border-slate-100 dark:border-white/5">
-            <div class="flex justify-between items-center mb-4">
-              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-purple-50 dark:bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 text-xl">📦</div><span class="font-bold text-lg text-slate-900 dark:text-white">Інші послуги</span></div>
-              <span id="customCostDisplay" class="font-black text-xl text-slate-900 dark:text-white">0 ₴</span>
+          <div id="blockElectro" class="service-card">
+            <div class="service-head">
+              <div class="service-title">
+                <div class="service-icon electro">Е</div>
+                <div>
+                  <h3>Електроенергія</h3>
+                  <p>Денний і нічний облік</p>
+                </div>
+              </div>
+              <div id="electroCostDisplay" class="service-sum">0 ₴</div>
             </div>
-            <div id="customServicesContainer" class="grid grid-cols-2 gap-3 empty:hidden"></div>
+
+            <div class="stack-md">
+              <div id="electroDayRow" class="meter-grid">
+                <div class="meter-col">
+                  <label>Попер. <span id="lblDay1">(День)</span></label>
+                  <input type="number" id="dPrev" />
+                </div>
+                <div class="meter-diff" id="dDiffBadge">0 кВт</div>
+                <div class="meter-col">
+                  <label class="accent-yellow">Поточні <span id="lblDay2">(День)</span></label>
+                  <input type="number" id="dCur" class="accent-yellow" />
+                </div>
+              </div>
+
+              <div id="electroNightRow" class="meter-grid">
+                <div class="meter-col">
+                  <label>Попер. (Ніч)</label>
+                  <input type="number" id="nPrev" />
+                </div>
+                <div class="meter-diff" id="nDiffBadge">0 кВт</div>
+                <div class="meter-col">
+                  <label class="accent-indigo">Поточні (Ніч)</label>
+                  <input type="number" id="nCur" class="accent-indigo" />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <button type="submit" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-5 rounded-[1.5rem] shadow-xl shadow-brand/20 transition-transform active:scale-[0.98] text-lg mt-4 border border-brand">
-            Зберегти розрахунок
-          </button>
+          <div id="blockGas" class="service-card">
+            <div class="service-head">
+              <div class="service-title">
+                <div class="service-icon gas">Гз</div>
+                <div>
+                  <h3>Газ</h3>
+                  <p>Показники лічильника</p>
+                </div>
+              </div>
+              <div id="gasCostDisplay" class="service-sum">0 ₴</div>
+            </div>
+
+            <div class="meter-grid">
+              <div class="meter-col">
+                <label>Попередні</label>
+                <input type="number" id="gPrev" />
+              </div>
+              <div class="meter-diff" id="gDiffBadge">0 м³</div>
+              <div class="meter-col">
+                <label class="accent-orange">Поточні</label>
+                <input type="number" id="gCur" class="accent-orange" />
+              </div>
+            </div>
+          </div>
+
+          <div id="blockCustomServices" class="service-card">
+            <div class="service-head">
+              <div class="service-title">
+                <div class="service-icon custom">І</div>
+                <div>
+                  <h3>Інші послуги</h3>
+                  <p>Фіксовані або додаткові платежі</p>
+                </div>
+              </div>
+              <div id="customCostDisplay" class="service-sum">0 ₴</div>
+            </div>
+
+            <div id="customServicesContainer" class="custom-grid"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-save">Зберегти розрахунок</button>
         </form>
+      </section>
+
+      <section id="tabHistory" class="tab-panel tab-hidden">
+        <div class="card chart-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Середній чек</p>
+              <h3 id="statsAvg">0 ₴</h3>
+            </div>
+            <div class="tag">Останні записи</div>
+          </div>
+
+          <div class="chart-wrap">
+            <div class="chart-grid">
+              <span></span><span></span><span></span><span class="bold"></span>
+            </div>
+            <div id="chartContainer" class="chart-bars"></div>
+          </div>
+        </div>
+
+        <div id="recordsList" class="stack-md"></div>
+
+        <button onclick="exportCSV()" class="btn btn-secondary full-width">Експорт в Excel</button>
+      </section>
+
+      <section id="tabSettings" class="tab-panel tab-hidden">
+        <div class="card">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Тема</p>
+              <h3>Оформлення</h3>
+            </div>
+          </div>
+
+          <div class="segmented">
+            <button id="mode-light" type="button" onclick="setThemeMode('light')">Світла</button>
+            <button id="mode-auto" type="button" onclick="setThemeMode('auto')">Системна</button>
+            <button id="mode-dark" type="button" onclick="setThemeMode('dark')">Темна</button>
+          </div>
+
+          <div class="theme-palette">
+            <button type="button" onclick="setThemeColor('blue')" id="btn-theme-blue" class="theme-dot blue"></button>
+            <button type="button" onclick="setThemeColor('indigo')" id="btn-theme-indigo" class="theme-dot indigo"></button>
+            <button type="button" onclick="setThemeColor('violet')" id="btn-theme-violet" class="theme-dot violet"></button>
+            <button type="button" onclick="setThemeColor('rose')" id="btn-theme-rose" class="theme-dot rose"></button>
+            <button type="button" onclick="setThemeColor('zinc')" id="btn-theme-zinc" class="theme-dot zinc"></button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Параметри</p>
+              <h3>Тарифи</h3>
+            </div>
+          </div>
+
+          <div class="settings-list">
+            <div class="setting-row">
+              <span>Холодна вода</span>
+              <input type="number" id="tWater" step="0.01" />
+            </div>
+            <div class="setting-row" id="settingHotWaterWrap">
+              <span>Гаряча вода</span>
+              <input type="number" id="tHotWater" step="0.01" />
+            </div>
+            <div class="setting-row">
+              <span>Світло базовий</span>
+              <input type="number" id="tElectroBase" step="0.01" />
+            </div>
+            <div class="setting-row" id="settingElectroWinterWrap">
+              <span>Світло зимовий</span>
+              <input type="number" id="tElectroWinter" step="0.01" />
+            </div>
+            <div class="setting-row">
+              <span>Газ</span>
+              <input type="number" id="tGas" step="0.01" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Склад</p>
+              <h3>Блоки послуг</h3>
+            </div>
+          </div>
+
+          <div class="toggle-list">
+            <label><span>Холодна вода</span><input type="checkbox" id="prefWater" /></label>
+            <label><span>Гаряча вода</span><input type="checkbox" id="prefHotWater" /></label>
+            <label><span>Електроенергія</span><input type="checkbox" id="prefElectro" /></label>
+            <label class="sub"><span>Двозонний тариф</span><input type="checkbox" id="prefElectroTwoZone" /></label>
+            <label class="sub"><span>Зимовий тариф</span><input type="checkbox" id="prefElectroWinter" /></label>
+            <label><span>Газ</span><input type="checkbox" id="prefGas" /></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Додатково</p>
+              <h3>Інші послуги</h3>
+            </div>
+          </div>
+
+          <div id="customServicesSettingsList" class="stack-sm"></div>
+          <button onclick="addCustomServiceField()" class="btn btn-secondary full-width">+ Додати нову</button>
+        </div>
+
+        <button type="button" onclick="saveSettings()" class="btn btn-primary full-width">Зберегти налаштування</button>
+        <button type="button" onclick="logout()" class="btn btn-danger full-width">Вийти з акаунту</button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button onclick="switchTab('tabCalc', 0)" id="btnTabCalc" class="nav-btn active">
+        <span>Рахунок</span>
+      </button>
+      <button onclick="switchTab('tabHistory', 1)" id="btnTabHistory" class="nav-btn">
+        <span>Історія</span>
+      </button>
+      <button onclick="switchTab('tabSettings', 2)" id="btnTabSettings" class="nav-btn">
+        <span>Налаштування</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="addressModal" class="modal hidden" onclick="if(event.target === this) closeAddressModal()">
+    <div id="addressModalContent" class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="section-head compact">
+        <div>
+          <p class="eyebrow">Керування</p>
+          <h3>Мої об'єкти</h3>
+        </div>
       </div>
 
-      <div id="tabHistory" class="tab-transition tab-hidden space-y-6 mt-2">
-        <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5">
-          <div class="flex justify-between items-end mb-6">
-            <div>
-              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Середній чек</p>
-              <h3 class="font-black text-2xl tracking-tight text-slate-900 dark:text-white" id="statsAvg">0 ₴</h3>
-            </div>
-            <div class="text-[11px] font-bold text-brand bg-brand-light px-3 py-1.5 rounded-xl tracking-wide">Останні записи</div>
-          </div>
-          <div class="relative h-44 w-full mt-4">
-            <div class="absolute inset-0 flex flex-col justify-between z-0">
-              <div class="border-t border-slate-100 dark:border-white/5 w-full h-0"></div>
-              <div class="border-t border-slate-100 dark:border-white/5 w-full h-0"></div>
-              <div class="border-t border-slate-100 dark:border-white/5 w-full h-0"></div>
-              <div class="border-t border-slate-300 dark:border-white/20 w-full h-0"></div>
-            </div>
-            <div id="chartContainer" class="absolute inset-0 flex justify-around items-end h-full pt-4 pb-1 z-10 px-2"></div>
-          </div>
-        </div>
-        <div id="recordsList" class="space-y-4 pb-2"></div>
-        <button onclick="exportCSV()" class="w-full py-4 mb-6 bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-[#2c2c2e] text-slate-700 dark:text-slate-300 font-bold rounded-[1.5rem] flex items-center justify-center gap-2 transition-colors border border-slate-200 dark:border-white/10 active:scale-[0.98]">
-          Експорт в Excel
-        </button>
-      </div>
+      <div id="addressListModal" class="stack-sm modal-list"></div>
 
-      <div id="tabSettings" class="tab-transition tab-hidden space-y-5 mt-2 pb-6">
-        <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5 mb-5">
-          <h3 class="font-black mb-4 text-base text-slate-900 dark:text-white flex items-center gap-2"><span class="text-brand text-xl">🎨</span> Оформлення</h3>
-          <div class="flex bg-slate-100 dark:bg-black/50 p-1.5 rounded-xl mb-5 relative">
-            <button id="mode-light" onclick="setThemeMode('light')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 z-10">Світла</button>
-            <button id="mode-auto" onclick="setThemeMode('auto')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 z-10">Системна</button>
-            <button id="mode-dark" onclick="setThemeMode('dark')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 z-10">Темна</button>
-          </div>
-          <div class="flex justify-between gap-3 px-2">
-            <button type="button" onclick="setThemeColor('blue')" class="w-8 h-8 rounded-full bg-[#007aff] border-2 border-transparent transition-transform" id="btn-theme-blue"></button>
-            <button type="button" onclick="setThemeColor('indigo')" class="w-8 h-8 rounded-full bg-[#4f46e5] border-2 border-transparent transition-transform" id="btn-theme-indigo"></button>
-            <button type="button" onclick="setThemeColor('violet')" class="w-8 h-8 rounded-full bg-[#8b5cf6] border-2 border-transparent transition-transform" id="btn-theme-violet"></button>
-            <button type="button" onclick="setThemeColor('rose')" class="w-8 h-8 rounded-full bg-[#f43f5e] border-2 border-transparent transition-transform" id="btn-theme-rose"></button>
-            <button type="button" onclick="setThemeColor('zinc')" class="w-8 h-8 rounded-full bg-[#52525b] border-2 border-transparent transition-transform" id="btn-theme-zinc"></button>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5">
-          <h3 class="font-black mb-5 text-lg text-slate-900 dark:text-white flex items-center gap-2"><span class="text-brand text-xl">🔐</span> Безпека</h3>
-          <div class="space-y-4">
-            <div class="bg-slate-50 dark:bg-black/40 p-4 rounded-2xl border border-slate-200 dark:border-white/10">
-              <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Секретне слово</p>
-              <p id="secretStateText" class="text-sm font-bold text-slate-700 dark:text-slate-200">Статус: невідомо</p>
-            </div>
-
-            <div>
-              <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Поточний пароль</label>
-              <input type="password" id="securityCurrentPassword" placeholder="Ваш пароль" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white">
-            </div>
-
-            <div>
-              <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Нове секретне слово</label>
-              <input type="text" id="securitySecretWord" placeholder="Введіть нове секретне слово" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white">
-            </div>
-
-            <p id="securityError" class="hidden text-red-500 text-sm text-center font-bold bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"></p>
-
-            <button type="button" id="saveSecretBtn" onclick="saveSecretWord()" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand/20 transition-transform active:scale-[0.98]">
-              Зберегти секретне слово
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5">
-          <h3 class="font-black mb-5 text-lg text-slate-900 dark:text-white flex items-center gap-2"><span class="text-brand text-xl">💰</span> Тарифи</h3>
-          <div class="space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-50 dark:border-white/5 pb-3"><span class="text-sm font-bold text-slate-600 dark:text-slate-300">Хол. Вода</span><input type="number" id="tWater" step="0.01" class="w-24 bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none text-right"></div>
-            <div class="flex justify-between items-center border-b border-slate-50 dark:border-white/5 pb-3" id="settingHotWaterWrap"><span class="text-sm font-bold text-slate-600 dark:text-slate-300">Гар. Вода</span><input type="number" id="tHotWater" step="0.01" class="w-24 bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none text-right"></div>
-            <div class="flex justify-between items-center border-b border-slate-50 dark:border-white/5 pb-3"><span class="text-sm font-bold text-slate-600 dark:text-slate-300">Світло Баз.</span><input type="number" id="tElectroBase" step="0.01" class="w-24 bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none text-right"></div>
-            <div class="flex justify-between items-center border-b border-slate-50 dark:border-white/5 pb-3" id="settingElectroWinterWrap"><span class="text-sm font-bold text-slate-600 dark:text-slate-300">Світло Зим.</span><input type="number" id="tElectroWinter" step="0.01" class="w-24 bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none text-right"></div>
-            <div class="flex justify-between items-center"><span class="text-sm font-bold text-slate-600 dark:text-slate-300">Газ</span><input type="number" id="tGas" step="0.01" class="w-24 bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none text-right"></div>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5">
-          <h3 class="font-black mb-5 text-lg text-slate-900 dark:text-white flex items-center gap-2"><span class="text-brand text-xl">⚙️</span> Блоки послуг</h3>
-          <div class="space-y-5">
-            <label class="flex justify-between items-center text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer"><span>💧 Холодна вода</span><input type="checkbox" id="prefWater"></label>
-            <label class="flex justify-between items-center text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer"><span>🌡️ Гаряча вода</span><input type="checkbox" id="prefHotWater"></label>
-            <label class="flex justify-between items-center text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer"><span>⚡️ Електроенергія</span><input type="checkbox" id="prefElectro"></label>
-            <label class="flex justify-between items-center text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer pl-4"><span>↳ Двозонний тариф</span><input type="checkbox" id="prefElectroTwoZone"></label>
-            <label class="flex justify-between items-center text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer pl-4"><span>↳ Зимовий тариф</span><input type="checkbox" id="prefElectroWinter"></label>
-            <label class="flex justify-between items-center text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer"><span>🔥 Газ</span><input type="checkbox" id="prefGas"></label>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-apple-dark p-6 rounded-[2.5rem] shadow-soft border border-slate-100 dark:border-white/5">
-          <h3 class="font-black mb-2 text-lg text-slate-900 dark:text-white flex items-center gap-2"><span class="text-brand text-xl">📦</span> Додаткові послуги</h3>
-          <div id="customServicesSettingsList" class="space-y-3 mb-4 mt-4"></div>
-          <button onclick="addCustomServiceField()" class="w-full py-3.5 bg-slate-50 dark:bg-black/50 rounded-xl text-xs font-bold text-brand border border-slate-200 dark:border-transparent">+ Додати нову</button>
-        </div>
-
-        <button type="button" onclick="saveSettings()" class="w-full bg-apple-darker dark:bg-white text-white dark:text-apple-darker rounded-[1.5rem] py-5 font-bold shadow-xl text-lg mt-2">Зберегти налаштування</button>
-        <button type="button" onclick="logout()" class="w-full bg-red-50 text-red-500 dark:bg-red-500/10 font-bold rounded-[1.5rem] py-4 mt-2 mb-4 border border-red-100 dark:border-transparent">Вийти з акаунту</button>
-      </div>
-    </div>
-
-    <div class="fixed bottom-[max(env(safe-area-inset-bottom,16px),16px)] left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[360px] bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-2xl border border-slate-100/50 dark:border-white/5 rounded-[2rem] shadow-2xl shadow-brand/10 dark:shadow-black/50 z-[60] px-2 py-1.5 flex justify-around items-center">
-      <button onclick="switchTab('tabCalc')" id="btnTabCalc" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-brand py-1"><span>🧮</span><span class="text-[10px] font-bold tracking-wide">Рахунок</span></button>
-      <button onclick="switchTab('tabHistory')" id="btnTabHistory" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 py-1"><span>📊</span><span class="text-[10px] font-bold tracking-wide">Історія</span></button>
-      <button onclick="switchTab('tabSettings')" id="btnTabSettings" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 py-1"><span>⚙️</span><span class="text-[10px] font-bold tracking-wide">Налашт.</span></button>
+      <button onclick="addNewAddress()" class="btn btn-secondary full-width">+ Додати нову адресу</button>
+      <button onclick="closeAddressModal()" class="btn btn-ghost full-width">Закрити</button>
     </div>
   </div>
 
-  <div id="addressModal" class="hidden fixed inset-0 z-[200] bg-apple-darker/60 dark:bg-black/60 backdrop-blur-md flex items-end justify-center transition-opacity" onclick="if(event.target === this) closeAddressModal()">
-    <div class="bg-white dark:bg-apple-dark w-full max-w-md rounded-t-[2.5rem] p-6 pb-[max(env(safe-area-inset-bottom),2rem)] spring-modal translate-y-full shadow-[0_-20px_40px_rgba(0,0,0,0.15)]" id="addressModalContent">
-      <div class="w-12 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full mx-auto mb-6"></div>
-      <h3 class="font-black text-2xl text-slate-900 dark:text-white mb-4">🏡 Мої об'єкти</h3>
-      <div id="addressListModal" class="space-y-3 mb-4 max-h-[50vh] overflow-y-auto no-scrollbar"></div>
-      <button onclick="addNewAddress()" class="w-full py-4 bg-brand-light hover:bg-brand-border text-brand font-bold rounded-2xl transition-colors mb-2">+ Додати нову адресу</button>
-      <button onclick="closeAddressModal()" class="w-full py-4 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-colors">Закрити</button>
-    </div>
-  </div>
-
-  <script>
-    const $ = id => document.getElementById(id);
-    const fmt = new Intl.NumberFormat('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const WORKER_URL = 'https://komunalka-v2-api.mikolenko-anton1.workers.dev';
-
-    let authToken = localStorage.getItem('k_token') || '';
-    let sessionLogin = localStorage.getItem('k_login') || '';
-    let profile = JSON.parse(localStorage.getItem('kprofile') || '{"name":"","login":"","userId":"","hasSecretWord":false}');
-
-    const defaultTariffs = { water: 30.38, hotWater: 100.00, electroBase: 4.32, electroWinter: 2.64, winterLimit: 2000, nightCoef: 0.5, gas: 7.96 };
-    const defaultPrefs = { showWater: true, showHotWater: false, showElectro: true, showGas: true, electroTwoZone: true, electroWinter: true, remindersEnabled: false, remWaterStart: 1, remWaterEnd: 5, remElectroStart: 28, remElectroEnd: 3 };
-    const defaultCustomServices = [{ id: "s1", name: "", defaultSum: "" }];
-
-    let addresses = [];
-    let currentAddressId = '';
-    let tariffs = { ...defaultTariffs };
-    let prefs = { ...defaultPrefs };
-    let records = [];
-    let customServices = [...defaultCustomServices];
-    let currentCalc = { waterCost: 0, hotWaterCost: 0, electroCost: 0, gasCost: 0, customCost: 0, total: 0 };
-
-    let toastTimeout;
-    function showToast(msg, icon = '✅') {
-      $('toastMsg').innerText = msg;
-      $('toastIcon').innerText = icon;
-      $('toast').classList.remove('-translate-y-24', 'opacity-0');
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => $('toast').classList.add('-translate-y-24', 'opacity-0'), 2500);
-    }
-
-    let currentMode = localStorage.getItem('themeMode') || 'auto';
-    let activeThemeColor = localStorage.getItem('k_color') || 'blue';
-
-    function applyThemeMode() {
-      if (currentMode === 'dark' || (currentMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-        $('metaThemeColor').setAttribute('content', '#000000');
-      } else {
-        document.documentElement.classList.remove('dark');
-        $('metaThemeColor').setAttribute('content', '#f2f2f7');
-      }
-    }
-
-    window.setThemeMode = function(mode) {
-      currentMode = mode;
-      localStorage.setItem('themeMode', mode);
-      applyThemeMode();
-      ['light','auto','dark'].forEach(m => {
-        const b = $('mode-' + m);
-        if (!b) return;
-        b.classList.remove('bg-white', 'dark:bg-[#2c2c2e]', 'text-slate-900', 'dark:text-white', 'shadow-sm');
-        if (m === mode) b.classList.add('bg-white', 'dark:bg-[#2c2c2e]', 'text-slate-900', 'dark:text-white', 'shadow-sm');
-      });
-    };
-
-    window.setThemeColor = function(color) {
-      document.body.classList.remove('theme-indigo', 'theme-blue', 'theme-violet', 'theme-rose', 'theme-zinc');
-      document.body.classList.add('theme-' + color);
-      activeThemeColor = color;
-      localStorage.setItem('k_color', color);
-      document.querySelectorAll('[id^="btn-theme-"]').forEach(btn => {
-        btn.style.transform = 'scale(1)';
-        btn.classList.remove('border-slate-300', 'dark:border-slate-500');
-      });
-      const actBtn = $('btn-theme-' + color);
-      if (actBtn) {
-        actBtn.style.transform = 'scale(1.15)';
-        actBtn.classList.add('border-slate-300', 'dark:border-slate-500');
-      }
-    };
-
-    async function apiFetch(path, options = {}) {
-      const headers = { ...(options.headers || {}) };
-      if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
-      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-
-      const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-      const raw = await res.text();
-      let data = null;
-
-      try {
-        data = raw ? JSON.parse(raw) : null;
-      } catch {
-        throw new Error(`NON_JSON_RESPONSE: ${raw || 'empty'}`);
-      }
-
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.details || data?.error || `HTTP_${res.status}`);
-      }
-
-      return data;
-    }
-
-    function updateSecretState() {
-      $('secretStateText').innerText = profile.hasSecretWord
-        ? 'Статус: секретне слово встановлено'
-        : 'Статус: секретне слово ще не встановлено';
-    }
-
-    function getCurrentAddress() {
-      return addresses.find(a => a.id === currentAddressId) || addresses[0] || null;
-    }
-
-    async function loadAddressRecords(addressId) {
-      const data = await apiFetch(`/api/addresses/${addressId}/records`);
-      records = (data.records || []).map(r => {
-        const d = r.data || {};
-        const t = r.totals || {};
-        return {
-          id: r.id,
-          month: r.month,
-          wPrev: d.wPrev || 0, wCur: d.wCur || 0,
-          hwPrev: d.hwPrev || 0, hwCur: d.hwCur || 0,
-          dPrev: d.dPrev || 0, dCur: d.dCur || 0,
-          nPrev: d.nPrev || 0, nCur: d.nCur || 0,
-          gPrev: d.gPrev || 0, gCur: d.gCur || 0,
-          customData: d.customData || {},
-          waterCost: t.waterCost || 0,
-          hotWaterCost: t.hotWaterCost || 0,
-          electroCost: t.electroCost || 0,
-          gasCost: t.gasCost || 0,
-          customCost: t.customCost || 0,
-          total: t.total || 0,
-          paid: !!r.paid
-        };
-      });
-    }
-
-    async function bootstrapAfterLogin() {
-      const me = await apiFetch('/api/me');
-      profile = {
-        login: me.user?.login || sessionLogin,
-        name: me.user?.displayName || me.user?.login || sessionLogin,
-        userId: me.user?.userId || '',
-        hasSecretWord: !!me.user?.hasSecretWord
-      };
-      localStorage.setItem('kprofile', JSON.stringify(profile));
-      $('userGreeting').innerText = `Привіт, ${profile.name || 'користувач'}!`;
-
-      addresses = (me.addresses || []).map(addr => ({
-        id: addr.id,
-        name: addr.name || 'Мій дім',
-        tariffs: { ...defaultTariffs, ...(addr.tariffs || {}) },
-        prefs: { ...defaultPrefs, ...(addr.prefs || {}) },
-        customServices: addr.customServices?.length ? addr.customServices : [...defaultCustomServices]
-      }));
-
-      if (!addresses.length) throw new Error('NO_ADDRESS');
-
-      currentAddressId = addresses[0].id;
-      await loadCurrentAddress();
-      $('authScreen').classList.add('hidden');
-      $('appScreen').classList.remove('hidden');
-      $('appScreen').classList.add('flex');
-      updateSecretState();
-    }
-
-    async function loadCurrentAddress() {
-      const addr = getCurrentAddress();
-      if (!addr) return;
-      tariffs = { ...defaultTariffs, ...(addr.tariffs || {}) };
-      prefs = { ...defaultPrefs, ...(addr.prefs || {}) };
-      customServices = addr.customServices?.length ? [...addr.customServices] : [...defaultCustomServices];
-      $('currentAddressDisplay').innerText = addr.name || 'Мій дім';
-      await loadAddressRecords(addr.id);
-      initAppUI();
-    }
-
-    async function performLogin(login, password) {
-      const btn = $('authSubmitBtn');
-      const errEl = $('authError');
-      errEl.classList.add('hidden');
-      btn.disabled = true;
-      btn.innerText = 'Вхід...';
-
-      try {
-        const data = await apiFetch('/api/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ login, password })
-        });
-
-        authToken = data.token;
-        sessionLogin = data.user.login;
-
-        localStorage.setItem('k_token', authToken);
-        localStorage.setItem('k_login', sessionLogin);
-
-        await bootstrapAfterLogin();
-        showToast('Успішний вхід', '✅');
-      } catch (error) {
-        errEl.innerText =
-          error.message === 'NOT_FOUND' ? 'Акаунт не знайдено' :
-          error.message === 'WRONG_PASSWORD' ? 'Невірний пароль' :
-          error.message === 'MISSING_FIELDS' ? 'Введи логін і пароль' :
-          error.message;
-        errEl.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Увійти';
-      }
-    }
-
-    async function performRegister(login, password, secretWord) {
-      await apiFetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ login, password, displayName: login, secretWord })
-      });
-    }
-
-    $('authForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      await performLogin($('authLogin').value.trim(), $('authPass').value.trim());
-    });
-
-    $('registerBtn').addEventListener('click', async () => {
-      const login = $('authLogin').value.trim();
-      const password = $('authPass').value.trim();
-      const secretWord = $('registerSecretWord').value.trim();
-
-      $('registerSecretWrap').classList.remove('hidden');
-
-      if (!login || !password || !secretWord) {
-        return showToast('Введи логін, пароль і секретне слово', '⚠️');
-      }
-
-      try {
-        await performRegister(login, password, secretWord);
-        $('registerSecretWord').value = '';
-        showToast('Акаунт створено, тепер увійди', '🎉');
-      } catch (e) {
-        showToast(e.message === 'ALREADY_EXISTS' ? 'Такий логін вже існує' : e.message, '⚠️');
-      }
-    });
-
-    window.openForgotModal = function() {
-      $('forgotError').classList.add('hidden');
-      $('forgotResultWrap').classList.add('hidden');
-      $('forgotLogin').value = $('authLogin').value.trim();
-      $('forgotModal').classList.remove('hidden');
-      setTimeout(() => $('forgotModalContent').classList.remove('translate-y-full'), 10);
-    };
-
-    window.closeForgotModal = function() {
-      $('forgotModalContent').classList.add('translate-y-full');
-      setTimeout(() => $('forgotModal').classList.add('hidden'), 300);
-    };
-
-    window.handleForgotPassword = async function() {
-      const login = $('forgotLogin').value.trim();
-      $('forgotError').classList.add('hidden');
-      $('forgotResultWrap').classList.add('hidden');
-
-      if (!login) {
-        $('forgotError').innerText = 'Введи логін';
-        $('forgotError').classList.remove('hidden');
-        return;
-      }
-
-      const btn = $('forgotSubmitBtn');
-      btn.disabled = true;
-      btn.innerText = 'Створення...';
-
-      try {
-        const data = await apiFetch('/api/auth/forgot-password', {
-          method: 'POST',
-          body: JSON.stringify({ login })
-        });
-
-        $('forgotResultLink').value = data.resetLink || '';
-        $('forgotResultWrap').classList.remove('hidden');
-      } catch (error) {
-        $('forgotError').innerText =
-          error.message === 'NOT_FOUND' ? 'Користувача не знайдено' :
-          error.message === 'MISSING_LOGIN' ? 'Введи логін' :
-          error.message;
-        $('forgotError').classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Створити лінк';
-      }
-    };
-
-    window.copyResetLink = async function() {
-      const text = $('forgotResultLink').value.trim();
-      if (!text) return;
-      await navigator.clipboard.writeText(text);
-      showToast('Посилання скопійовано', '📋');
-    };
-
-    window.openResetLink = function() {
-      const link = $('forgotResultLink').value.trim();
-      if (!link) return;
-      window.open(link, '_blank');
-    };
-
-    async function saveSecretWordRequest(password, secretWord) {
-      return apiFetch('/api/auth/set-secret-word', {
-        method: 'POST',
-        body: JSON.stringify({ password, secretWord })
-      });
-    }
-
-    window.saveSecretWord = async function() {
-      const password = $('securityCurrentPassword').value.trim();
-      const secretWord = $('securitySecretWord').value.trim();
-      const err = $('securityError');
-      const btn = $('saveSecretBtn');
-
-      err.classList.add('hidden');
-
-      if (!password || !secretWord) {
-        err.innerText = 'Введи поточний пароль і нове секретне слово';
-        err.classList.remove('hidden');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = 'Збереження...';
-
-      try {
-        await saveSecretWordRequest(password, secretWord);
-        profile.hasSecretWord = true;
-        localStorage.setItem('kprofile', JSON.stringify(profile));
-        $('securityCurrentPassword').value = '';
-        $('securitySecretWord').value = '';
-        updateSecretState();
-        showToast('Секретне слово збережено', '🔐');
-      } catch (error) {
-        err.innerText =
-          error.message === 'WRONG_PASSWORD' ? 'Невірний поточний пароль' :
-          error.message === 'MISSING_FIELDS' ? 'Заповни всі поля' :
-          error.message;
-        err.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Зберегти секретне слово';
-      }
-    };
-
-    function renderCalcCustomServices() {
-      const c = $('customServicesContainer');
-      c.innerHTML = customServices.map(srv => `
-        <div class="flex flex-col bg-slate-50 dark:bg-black/40 rounded-2xl p-3 border border-slate-100 dark:border-white/5">
-          <span class="block text-[10px] font-bold text-slate-400 uppercase truncate mb-1.5 text-center">${srv.name || 'Послуга'}</span>
-          <input type="number" step="0.01" id="custom_${srv.id}" class="custom-srv-input w-full bg-white dark:bg-[#2c2c2e] p-2.5 rounded-xl text-center text-lg font-black outline-none shadow-sm" placeholder="${srv.defaultSum || '0.00'}">
-        </div>
-      `).join('');
-      document.querySelectorAll('.custom-srv-input').forEach(input => input.addEventListener('input', calculatePreview));
-    }
-
-    function renderSettingsCustomServices() {
-      $('customServicesSettingsList').innerHTML = customServices.map((srv, i) => `
-        <div class="grid grid-cols-[1fr_100px_40px] gap-2 items-center">
-          <input type="text" value="${srv.name || ''}" onchange="customServices[${i}].name=this.value" placeholder="Назва" class="bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none">
-          <input type="number" step="0.01" value="${srv.defaultSum || ''}" onchange="customServices[${i}].defaultSum=this.value" placeholder="Сума" class="bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-transparent px-3 py-2 rounded-xl font-bold outline-none text-right">
-          <button type="button" onclick="removeCustomServiceField(${i})" class="h-10 rounded-xl bg-red-50 text-red-500">✕</button>
-        </div>
-      `).join('');
-    }
-
-    window.addCustomServiceField = function() {
-      customServices.push({ id: 's' + Date.now(), name: '', defaultSum: '' });
-      renderSettingsCustomServices();
-    };
-
-    window.removeCustomServiceField = function(index) {
-      customServices.splice(index, 1);
-      if (!customServices.length) customServices = [{ id: 's1', name: '', defaultSum: '' }];
-      renderSettingsCustomServices();
-    };
-
-    function calculatePreview() {
-      const num = id => parseFloat($(id)?.value || 0);
-      const diff = (a, b) => Math.max(0, num(b) - num(a));
-
-      const waterUsed = prefs.showWater ? diff('wPrev', 'wCur') : 0;
-      const hotWaterUsed = prefs.showHotWater ? diff('hwPrev', 'hwCur') : 0;
-      const dayUsed = prefs.showElectro ? diff('dPrev', 'dCur') : 0;
-      const nightUsed = prefs.showElectro && prefs.electroTwoZone ? diff('nPrev', 'nCur') : 0;
-      const gasUsed = prefs.showGas ? diff('gPrev', 'gCur') : 0;
-
-      const isWinter = $('isWinterInput').checked;
-      const electroTariff = prefs.electroWinter && isWinter ? Number(tariffs.electroWinter || 0) : Number(tariffs.electroBase || 0);
-
-      let customCost = 0;
-      customServices.forEach(srv => {
-        const el = $('custom_' + srv.id);
-        let v = parseFloat(el?.value);
-        if (isNaN(v)) v = parseFloat(srv.defaultSum || 0) || 0;
-        customCost += v;
-      });
-
-      currentCalc.waterCost = waterUsed * Number(tariffs.water || 0);
-      currentCalc.hotWaterCost = hotWaterUsed * Number(tariffs.hotWater || 0);
-      currentCalc.electroCost = dayUsed * electroTariff + nightUsed * electroTariff * Number(tariffs.nightCoef || 0.5);
-      currentCalc.gasCost = gasUsed * Number(tariffs.gas || 0);
-      currentCalc.customCost = customCost;
-      currentCalc.total = currentCalc.waterCost + currentCalc.hotWaterCost + currentCalc.electroCost + currentCalc.gasCost + currentCalc.customCost;
-
-      $('waterCostDisplay').innerText = fmt.format(currentCalc.waterCost) + ' ₴';
-      $('hotWaterCostDisplay').innerText = fmt.format(currentCalc.hotWaterCost) + ' ₴';
-      $('electroCostDisplay').innerText = fmt.format(currentCalc.electroCost) + ' ₴';
-      $('gasCostDisplay').innerText = fmt.format(currentCalc.gasCost) + ' ₴';
-      $('customCostDisplay').innerText = fmt.format(currentCalc.customCost) + ' ₴';
-      $('heroTotal').innerHTML = `${fmt.format(currentCalc.total)} <span class="text-2xl font-bold text-white/50">₴</span>`;
-
-      $('wDiffBadge').innerText = waterUsed + ' м³';
-      $('hwDiffBadge').innerText = hotWaterUsed + ' м³';
-      $('dDiffBadge').innerText = dayUsed + ' кВт';
-      $('nDiffBadge').innerText = nightUsed + ' кВт';
-      $('gDiffBadge').innerText = gasUsed + ' м³';
-    }
-
-    function fillPreviousReadings() {
-      ['wPrev','wCur','hwPrev','hwCur','dPrev','dCur','nPrev','nCur','gPrev','gCur'].forEach(id => {
-        if ($(id)) $(id).value = '';
-      });
-
-      document.querySelectorAll('.custom-srv-input').forEach(el => el.value = '');
-
-      if (!records.length) return;
-
-      const lr = [...records].sort((a, b) => b.month.localeCompare(a.month))[0];
-      $('wPrev').value = lr.wCur || '';
-      $('wCur').value = lr.wCur || '';
-      $('hwPrev').value = lr.hwCur || '';
-      $('hwCur').value = lr.hwCur || '';
-      $('dPrev').value = lr.dCur || '';
-      $('dCur').value = lr.dCur || '';
-      $('nPrev').value = lr.nCur || '';
-      $('nCur').value = lr.nCur || '';
-      $('gPrev').value = lr.gCur || '';
-      $('gCur').value = lr.gCur || '';
-
-      customServices.forEach(srv => {
-        const el = $('custom_' + srv.id);
-        if (!el) return;
-        if (lr.customData && lr.customData[srv.id]) el.value = lr.customData[srv.id].val;
-        else if (srv.defaultSum) el.value = srv.defaultSum;
-      });
-    }
-
-    async function saveCurrentRecord() {
-      const month = $('monthInput').value;
-      const data = {
-        wPrev: parseFloat($('wPrev').value || 0),
-        wCur: parseFloat($('wCur').value || 0),
-        hwPrev: parseFloat($('hwPrev').value || 0),
-        hwCur: parseFloat($('hwCur').value || 0),
-        dPrev: parseFloat($('dPrev').value || 0),
-        dCur: parseFloat($('dCur').value || 0),
-        nPrev: parseFloat($('nPrev').value || 0),
-        nCur: parseFloat($('nCur').value || 0),
-        gPrev: parseFloat($('gPrev').value || 0),
-        gCur: parseFloat($('gCur').value || 0),
-        customData: {}
-      };
-
-      customServices.forEach(srv => {
-        const el = $('custom_' + srv.id);
-        let v = parseFloat(el?.value);
-        if (isNaN(v)) v = parseFloat(srv.defaultSum || 0) || 0;
-        if (v) data.customData[srv.id] = { name: srv.name, val: v };
-      });
-
-      await apiFetch(`/api/addresses/${currentAddressId}/records/${month}`, {
-        method: 'PUT',
-        body: JSON.stringify({ data, totals: currentCalc, paid: false })
-      });
-
-      await loadAddressRecords(currentAddressId);
-      renderRecords();
-      fillPreviousReadings();
-      calculatePreview();
-    }
-
-    $('utilityForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      try {
-        await saveCurrentRecord();
-        showToast('Збережено!', '✅');
-        switchTab('tabHistory', 1);
-      } catch {
-        showToast('Помилка збереження', '⚠️');
-      }
-    });
-
-    function renderChart(sortedRecords) {
-      const container = $('chartContainer');
-      const recent = sortedRecords.slice(0, 6).reverse();
-      if (!recent.length) {
-        container.innerHTML = '<span class="text-sm text-slate-400 m-auto absolute inset-0 flex items-center justify-center">Немає записів</span>';
-        return;
-      }
-      const max = Math.max(...recent.map(r => r.total), 1);
-      container.innerHTML = recent.map(r => {
-        const h = (r.total / max) * 100;
-        return `
-          <div class="flex flex-col items-center flex-1 group relative h-full justify-end px-1">
-            <div class="w-full relative flex items-end justify-center rounded-t-lg bg-slate-100 dark:bg-white/5 overflow-hidden h-full">
-              <div class="w-full rounded-t-lg" style="height:${Math.max(4, h)}%;background:${r.paid ? 'var(--brand-main)' : 'linear-gradient(to top, #fb923c, #fcd34d)'}"></div>
-            </div>
-            <span class="text-[10px] text-slate-500 uppercase font-bold mt-2">${r.month.slice(5)}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderRecords() {
-      const sorted = [...records].sort((a, b) => b.month.localeCompare(a.month));
-      $('statsAvg').innerText = sorted.length ? fmt.format(sorted.reduce((s, r) => s + r.total, 0) / sorted.length) + ' ₴' : '0 ₴';
-      renderChart(sorted);
-
-      $('recordsList').innerHTML = sorted.map(rec => `
-        <div class="bg-white dark:bg-apple-dark p-5 rounded-[2rem] shadow-soft border border-slate-100 dark:border-white/5">
-          <div class="flex justify-between items-center mb-3">
-            <div>
-              <h4 class="font-bold text-xl text-slate-900 dark:text-white">${rec.month}</h4>
-              <div class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg inline-block ${rec.paid ? 'bg-brand-light text-brand' : 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400'}">${rec.paid ? 'Оплачено' : 'Не оплачено'}</div>
-            </div>
-            <span class="font-black text-2xl text-slate-900 dark:text-white">${fmt.format(rec.total)} ₴</span>
-          </div>
-          <div class="space-y-1 text-sm">
-            ${rec.waterCost ? `<div class="flex justify-between"><span>Вода</span><span>${fmt.format(rec.waterCost)} ₴</span></div>` : ''}
-            ${rec.hotWaterCost ? `<div class="flex justify-between"><span>Гар. вода</span><span>${fmt.format(rec.hotWaterCost)} ₴</span></div>` : ''}
-            ${rec.electroCost ? `<div class="flex justify-between"><span>Світло</span><span>${fmt.format(rec.electroCost)} ₴</span></div>` : ''}
-            ${rec.gasCost ? `<div class="flex justify-between"><span>Газ</span><span>${fmt.format(rec.gasCost)} ₴</span></div>` : ''}
-            ${rec.customCost ? `<div class="flex justify-between"><span>Інше</span><span>${fmt.format(rec.customCost)} ₴</span></div>` : ''}
-          </div>
-          <div class="flex gap-2.5 mt-4 pt-2 border-t border-slate-100 dark:border-white/5">
-            <button type="button" onclick="togglePaidByMonth('${rec.month}')" class="flex-1 py-3.5 rounded-2xl font-bold text-xs border ${rec.paid ? 'bg-slate-50 text-slate-500 dark:bg-[#2c2c2e] border-transparent' : 'bg-brand text-white shadow-lg'}">${rec.paid ? 'Позначити як не оплачено' : 'Позначити як оплачено'}</button>
-            <button type="button" onclick="deleteRecordByMonth('${rec.month}')" class="w-12 bg-red-50 dark:bg-red-500/10 rounded-2xl text-red-400">🗑️</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    window.togglePaidByMonth = async function(month) {
-      try {
-        await apiFetch(`/api/addresses/${currentAddressId}/records/${month}/paid`, { method: 'PATCH' });
-        await loadAddressRecords(currentAddressId);
-        renderRecords();
-      } catch {
-        showToast('Помилка оновлення', '⚠️');
-      }
-    };
-
-    window.deleteRecordByMonth = async function(month) {
-      if (!confirm('Дійсно видалити цей розрахунок?')) return;
-      try {
-        await apiFetch(`/api/addresses/${currentAddressId}/records/${month}`, { method: 'DELETE' });
-        await loadAddressRecords(currentAddressId);
-        renderRecords();
-        fillPreviousReadings();
-        calculatePreview();
-      } catch {
-        showToast('Помилка видалення', '⚠️');
-      }
-    };
-
-    window.switchTab = function(tabId, index = -1) {
-      document.querySelectorAll('.tab-transition').forEach(el => {
-        el.classList.remove('tab-active');
-        el.classList.add('tab-hidden');
-      });
-      $(tabId).classList.remove('tab-hidden');
-      $(tabId).classList.add('tab-active');
-
-      if (index >= 0) {
-        document.querySelectorAll('.nav-btn').forEach(el => {
-          el.classList.remove('text-brand');
-          el.classList.add('text-slate-400', 'dark:text-slate-500');
-        });
-        const btnId = tabId === 'tabCalc' ? 'btnTabCalc' : tabId === 'tabHistory' ? 'btnTabHistory' : 'btnTabSettings';
-        $(btnId).classList.remove('text-slate-400', 'dark:text-slate-500');
-        $(btnId).classList.add('text-brand');
-      }
-
-      if (tabId === 'tabHistory') renderRecords();
-      if (tabId === 'tabSettings') {
-        renderSettingsCustomServices();
-        updateSecretState();
-      }
-
-      $('swipeContainer').scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.openAddressModal = function() {
-      $('addressModal').classList.remove('hidden');
-      setTimeout(() => $('addressModalContent').classList.remove('translate-y-full'), 10);
-      renderAddressModal();
-    };
-
-    window.closeAddressModal = function() {
-      $('addressModalContent').classList.add('translate-y-full');
-      setTimeout(() => $('addressModal').classList.add('hidden'), 400);
-    };
-
-    function renderAddressModal() {
-      $('addressListModal').innerHTML = addresses.map(a => `
-        <div class="flex items-center justify-between p-4 rounded-2xl border transition-all ${a.id === currentAddressId ? 'bg-brand border-brand text-white shadow-lg shadow-brand/20' : 'bg-slate-50 dark:bg-black/50 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200'} cursor-pointer" onclick="selectAddress('${a.id}')">
-          <span class="font-bold text-lg truncate pr-2 flex-1">${a.name}</span>
-          <div class="flex gap-1.5 shrink-0 items-center">
-            <button onclick="editAddressName(event, '${a.id}')" class="p-2 rounded-xl shadow-sm ${a.id === currentAddressId ? 'bg-white/20 text-white' : 'bg-white dark:bg-[#2c2c2e] text-slate-400'}">✏️</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    window.selectAddress = async function(id) {
-      currentAddressId = id;
-      await loadCurrentAddress();
-      closeAddressModal();
-    };
-
-    window.addNewAddress = async function() {
-      const name = prompt('Назва нової адреси');
-      if (!name || !name.trim()) return;
-
-      try {
-        const data = await apiFetch('/api/addresses', {
-          method: 'POST',
-          body: JSON.stringify({ name: name.trim(), tariffs: defaultTariffs, prefs: defaultPrefs, customServices: defaultCustomServices })
-        });
-
-        addresses.push({
-          id: data.address.id,
-          name: data.address.name,
-          tariffs: { ...defaultTariffs, ...data.address.tariffs },
-          prefs: { ...defaultPrefs, ...data.address.prefs },
-          customServices: data.address.customServices || [...defaultCustomServices]
-        });
-
-        currentAddressId = data.address.id;
-        await loadCurrentAddress();
-        closeAddressModal();
-        showToast('Адресу додано', '🏡');
-      } catch {
-        showToast('Помилка додавання адреси', '⚠️');
-      }
-    };
-
-    window.editAddressName = async function(e, id) {
-      e.stopPropagation();
-      const addr = addresses.find(a => a.id === id);
-      const newName = prompt('Нова назва адреси', addr?.name || '');
-      if (!newName || !newName.trim()) return;
-
-      try {
-        const data = await apiFetch(`/api/addresses/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ name: newName.trim() })
-        });
-        const i = addresses.findIndex(a => a.id === id);
-        if (i >= 0) addresses[i].name = data.address.name;
-        if (currentAddressId === id) $('currentAddressDisplay').innerText = data.address.name;
-        renderAddressModal();
-      } catch {
-        showToast('Помилка перейменування', '⚠️');
-      }
-    };
-
-    window.saveSettings = async function() {
-      tariffs = {
-        water: parseFloat($('tWater').value || 0),
-        hotWater: parseFloat($('tHotWater').value || 0),
-        electroBase: parseFloat($('tElectroBase').value || 0),
-        electroWinter: parseFloat($('tElectroWinter').value || 0),
-        winterLimit: defaultTariffs.winterLimit,
-        nightCoef: defaultTariffs.nightCoef,
-        gas: parseFloat($('tGas').value || 0)
-      };
-
-      prefs = {
-        showWater: $('prefWater').checked,
-        showHotWater: $('prefHotWater').checked,
-        showElectro: $('prefElectro').checked,
-        showGas: $('prefGas').checked,
-        electroTwoZone: $('prefElectroTwoZone').checked,
-        electroWinter: $('prefElectroWinter').checked,
-        remindersEnabled: false,
-        remWaterStart: 1,
-        remWaterEnd: 5,
-        remElectroStart: 28,
-        remElectroEnd: 3
-      };
-
-      try {
-        await apiFetch(`/api/addresses/${currentAddressId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ tariffs, prefs, customServices })
-        });
-
-        const idx = addresses.findIndex(a => a.id === currentAddressId);
-        if (idx >= 0) {
-          addresses[idx].tariffs = { ...tariffs };
-          addresses[idx].prefs = { ...prefs };
-          addresses[idx].customServices = [...customServices];
-        }
-
-        initAppUI();
-        showToast('Налаштування збережено', '✅');
-      } catch {
-        showToast('Помилка збереження', '⚠️');
-      }
-    };
-
-    window.exportCSV = function() {
-      if (!records.length) return showToast('Немає даних для експорту', '⚠️');
-
-      let headers = ['Місяць','Сума','Статус'];
-      let csv = headers.join(',') + '\n';
-
-      [...records].sort((a, b) => b.month.localeCompare(a.month)).forEach(r => {
-        csv += [r.month, r.total, r.paid ? 'Оплачено' : 'Не оплачено'].join(',') + '\n';
-      });
-
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `komunalka-${currentAddressId}.csv`;
-      link.click();
-    };
-
-    window.logout = function() {
-      if (!confirm('Вийти з акаунту?')) return;
-      localStorage.removeItem('k_token');
-      localStorage.removeItem('k_login');
-      localStorage.removeItem('kprofile');
-      authToken = '';
-      sessionLogin = '';
-      profile = { name: '', login: '', userId: '', hasSecretWord: false };
-      location.reload();
-    };
-
-    function initAppUI() {
-      $('tWater').value = tariffs.water ?? '';
-      $('tHotWater').value = tariffs.hotWater ?? '';
-      $('tElectroBase').value = tariffs.electroBase ?? '';
-      $('tElectroWinter').value = tariffs.electroWinter ?? '';
-      $('tGas').value = tariffs.gas ?? '';
-
-      $('prefWater').checked = !!prefs.showWater;
-      $('prefHotWater').checked = !!prefs.showHotWater;
-      $('prefElectro').checked = !!prefs.showElectro;
-      $('prefGas').checked = !!prefs.showGas;
-      $('prefElectroTwoZone').checked = !!prefs.electroTwoZone;
-      $('prefElectroWinter').checked = !!prefs.electroWinter;
-
-      $('blockWater').style.display = prefs.showWater ? '' : 'none';
-      $('blockHotWater').style.display = prefs.showHotWater ? '' : 'none';
-      $('blockElectro').style.display = prefs.showElectro ? '' : 'none';
-      $('blockGas').style.display = prefs.showGas ? '' : 'none';
-      $('electroNightRow').style.display = prefs.electroTwoZone ? '' : 'none';
-      $('settingHotWaterWrap').style.display = prefs.showHotWater ? '' : 'none';
-      $('settingElectroWinterWrap').style.display = prefs.showElectro ? '' : 'none';
-
-      renderCalcCustomServices();
-      renderSettingsCustomServices();
-
-      if (!$('monthInput').value) {
-        const d = new Date();
-        $('monthInput').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      }
-
-      fillPreviousReadings();
-      calculatePreview();
-      renderRecords();
-      updateSecretState();
-
-      ['wPrev','wCur','hwPrev','hwCur','dPrev','dCur','nPrev','nCur','gPrev','gCur','isWinterInput','monthInput'].forEach(id => {
-        $(id)?.addEventListener('input', calculatePreview);
-        $(id)?.addEventListener('change', calculatePreview);
-      });
-    }
-
-    applyThemeMode();
-    setThemeMode(currentMode);
-    setThemeColor(activeThemeColor);
-
-    if (authToken) {
-      bootstrapAfterLogin().catch(() => {
-        localStorage.removeItem('k_token');
-        localStorage.removeItem('k_login');
-        localStorage.removeItem('kprofile');
-      });
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
