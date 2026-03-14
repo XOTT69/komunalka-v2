@@ -36,7 +36,7 @@
           }
         }
       }
-    }
+    };
   </script>
   <meta name="theme-color" content="#f2f2f7" id="metaThemeColor" />
   <link rel="apple-touch-icon" href="icon.png" />
@@ -72,6 +72,30 @@
     <span id="toastIcon">✅</span><span id="toastMsg">Повідомлення</span>
   </div>
 
+  <div id="forgotModal" class="hidden fixed inset-0 z-[250] bg-black/40 backdrop-blur-sm flex items-end justify-center" onclick="if(event.target===this) closeForgotModal()">
+    <div id="forgotModalContent" class="bg-white dark:bg-apple-dark w-full max-w-md rounded-t-[2.5rem] p-6 pb-[max(env(safe-area-inset-bottom),2rem)] spring-modal translate-y-full shadow-[0_-20px_40px_rgba(0,0,0,0.15)]">
+      <div class="w-12 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full mx-auto mb-6"></div>
+      <h3 class="font-black text-2xl text-slate-900 dark:text-white mb-2">🔐 Відновлення пароля</h3>
+      <p class="text-slate-500 text-sm mb-4">Введи свій логін, і система створить reset link</p>
+      <div class="space-y-4">
+        <input type="text" id="forgotLogin" placeholder="Ваш логін" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white" />
+        <p id="forgotError" class="hidden text-red-500 text-sm text-center font-bold bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"></p>
+        <div id="forgotResultWrap" class="hidden bg-slate-50 dark:bg-black/40 rounded-2xl p-4 border border-slate-200 dark:border-white/10">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Reset link</p>
+          <textarea id="forgotResultLink" readonly class="w-full min-h-[120px] bg-white dark:bg-[#2c2c2e] rounded-xl p-3 text-sm outline-none resize-none"></textarea>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button type="button" onclick="copyResetLink()" class="w-full py-3 rounded-xl bg-brand text-white font-bold">Копіювати</button>
+            <button type="button" onclick="openResetLink()" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-white/10 font-bold">Відкрити</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="forgotSubmitBtn" onclick="handleForgotPassword()" class="w-full py-4 rounded-2xl bg-brand text-white font-bold">Створити лінк</button>
+          <button type="button" onclick="closeForgotModal()" class="w-full py-4 rounded-2xl bg-slate-100 dark:bg-white/5 font-bold">Закрити</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="authScreen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center p-6 bg-apple-light dark:bg-apple-darker overflow-y-auto">
     <div class="w-full max-w-sm py-10">
       <div class="text-center mb-10">
@@ -88,15 +112,25 @@
             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Логін</label>
             <input type="text" id="authLogin" placeholder="Логін" required autocapitalize="none" autocorrect="off" spellcheck="false" class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white transition-all shadow-inner">
           </div>
+
           <div>
             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5 ml-2 tracking-wider">Пароль</label>
             <input type="password" id="authPass" placeholder="••••••••" required class="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-base font-bold outline-none focus:ring-2 focus:ring-brand text-slate-900 dark:text-white transition-all shadow-inner">
           </div>
+
           <p id="authError" class="text-red-500 text-sm hidden text-center font-bold bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"></p>
-          <div class="flex gap-2 mt-6 pt-2">
-            <button type="submit" id="authSubmitBtn" class="flex-1 bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand/30 transition-transform active:scale-[0.96] text-lg tracking-wide">Увійти</button>
-            <button type="button" id="registerBtn" class="flex-1 bg-slate-100 dark:bg-black/40 text-slate-700 dark:text-white font-bold py-4 rounded-2xl border border-slate-200 dark:border-white/10 transition-transform active:scale-[0.96] text-lg tracking-wide">Реєстрація</button>
-          </div>
+
+          <button type="submit" id="authSubmitBtn" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand/30 transition-transform active:scale-[0.96] text-lg tracking-wide">
+            Увійти
+          </button>
+
+          <button type="button" id="registerBtn" class="w-full bg-slate-100 dark:bg-black/40 text-slate-700 dark:text-white font-bold py-4 rounded-2xl border border-slate-200 dark:border-white/10 transition-transform active:scale-[0.96] text-lg tracking-wide">
+            Реєстрація
+          </button>
+
+          <button type="button" onclick="openForgotModal()" class="w-full text-brand font-bold py-2 text-sm">
+            Забув пароль?
+          </button>
         </form>
       </div>
     </div>
@@ -198,7 +232,9 @@
             <div id="customServicesContainer" class="grid grid-cols-2 gap-3 empty:hidden"></div>
           </div>
 
-          <button type="submit" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-5 rounded-[1.5rem] shadow-xl shadow-brand/20 transition-transform active:scale-[0.98] text-lg mt-4 border border-brand">Зберегти розрахунок</button>
+          <button type="submit" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-5 rounded-[1.5rem] shadow-xl shadow-brand/20 transition-transform active:scale-[0.98] text-lg mt-4 border border-brand">
+            Зберегти розрахунок
+          </button>
         </form>
       </div>
 
@@ -222,7 +258,9 @@
           </div>
         </div>
         <div id="recordsList" class="space-y-4 pb-2"></div>
-        <button onclick="exportCSV()" class="w-full py-4 mb-6 bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-[#2c2c2e] text-slate-700 dark:text-slate-300 font-bold rounded-[1.5rem] flex items-center justify-center gap-2 transition-colors border border-slate-200 dark:border-white/10 active:scale-[0.98]">Експорт в Excel</button>
+        <button onclick="exportCSV()" class="w-full py-4 mb-6 bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-[#2c2c2e] text-slate-700 dark:text-slate-300 font-bold rounded-[1.5rem] flex items-center justify-center gap-2 transition-colors border border-slate-200 dark:border-white/10 active:scale-[0.98]">
+          Експорт в Excel
+        </button>
       </div>
 
       <div id="tabSettings" class="tab-transition tab-hidden space-y-5 mt-2 pb-6">
@@ -277,9 +315,9 @@
     </div>
 
     <div class="fixed bottom-[max(env(safe-area-inset-bottom,16px),16px)] left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[360px] bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-2xl border border-slate-100/50 dark:border-white/5 rounded-[2rem] shadow-2xl shadow-brand/10 dark:shadow-black/50 z-[60] px-2 py-1.5 flex justify-around items-center">
-      <button onclick="switchTab('tabCalc', 0)" id="btnTabCalc" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-brand py-1"><span>🧮</span><span class="text-[10px] font-bold tracking-wide">Рахунок</span></button>
-      <button onclick="switchTab('tabHistory', 1)" id="btnTabHistory" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 py-1"><span>📊</span><span class="text-[10px] font-bold tracking-wide">Історія</span></button>
-      <button onclick="switchTab('tabSettings', 2)" id="btnTabSettings" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 py-1"><span>⚙️</span><span class="text-[10px] font-bold tracking-wide">Налашт.</span></button>
+      <button onclick="switchTab('tabCalc')" id="btnTabCalc" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-brand py-1"><span>🧮</span><span class="text-[10px] font-bold tracking-wide">Рахунок</span></button>
+      <button onclick="switchTab('tabHistory')" id="btnTabHistory" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 py-1"><span>📊</span><span class="text-[10px] font-bold tracking-wide">Історія</span></button>
+      <button onclick="switchTab('tabSettings')" id="btnTabSettings" class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 py-1"><span>⚙️</span><span class="text-[10px] font-bold tracking-wide">Налашт.</span></button>
     </div>
   </div>
 
@@ -302,9 +340,9 @@
     let sessionLogin = localStorage.getItem('k_login') || '';
     let profile = JSON.parse(localStorage.getItem('kprofile') || '{"name":"","login":"","userId":""}');
 
-    let defaultTariffs = { water: 30.38, hotWater: 100.00, electroBase: 4.32, electroWinter: 2.64, winterLimit: 2000, nightCoef: 0.5, gas: 7.96 };
-    let defaultPrefs = { showWater: true, showHotWater: false, showElectro: true, showGas: true, electroTwoZone: true, electroWinter: true, remindersEnabled: false, remWaterStart: 1, remWaterEnd: 5, remElectroStart: 28, remElectroEnd: 3 };
-    let defaultCustomServices = [{ id: "s1", name: "", defaultSum: "" }];
+    const defaultTariffs = { water: 30.38, hotWater: 100.00, electroBase: 4.32, electroWinter: 2.64, winterLimit: 2000, nightCoef: 0.5, gas: 7.96 };
+    const defaultPrefs = { showWater: true, showHotWater: false, showElectro: true, showGas: true, electroTwoZone: true, electroWinter: true, remindersEnabled: false, remWaterStart: 1, remWaterEnd: 5, remElectroStart: 28, remElectroEnd: 3 };
+    const defaultCustomServices = [{ id: "s1", name: "", defaultSum: "" }];
 
     let addresses = [];
     let currentAddressId = '';
@@ -315,13 +353,13 @@
     let currentCalc = { waterCost: 0, hotWaterCost: 0, electroCost: 0, gasCost: 0, customCost: 0, total: 0 };
 
     let toastTimeout;
-    window.showToast = function(msg, icon = '✅') {
+    function showToast(msg, icon = '✅') {
       $('toastMsg').innerText = msg;
       $('toastIcon').innerText = icon;
       $('toast').classList.remove('-translate-y-24', 'opacity-0');
       clearTimeout(toastTimeout);
       toastTimeout = setTimeout(() => $('toast').classList.add('-translate-y-24', 'opacity-0'), 2500);
-    };
+    }
 
     let currentMode = localStorage.getItem('themeMode') || 'auto';
     let activeThemeColor = localStorage.getItem('k_color') || 'blue';
@@ -370,23 +408,24 @@
       if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
       const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
+      const raw = await res.text();
       let data = null;
-      try { data = await res.json(); } catch { data = { success: false, error: 'INVALID_SERVER_RESPONSE' }; }
-      if (!res.ok || !data.success) throw new Error(data.error || `HTTP_${res.status}`);
+
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {
+        throw new Error(`NON_JSON_RESPONSE: ${raw || 'empty'}`);
+      }
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.details || data?.error || `HTTP_${res.status}`);
+      }
+
       return data;
     }
 
     function getCurrentAddress() {
       return addresses.find(a => a.id === currentAddressId) || addresses[0] || null;
-    }
-
-    function syncCurrentAddressMemory() {
-      const idx = addresses.findIndex(a => a.id === currentAddressId);
-      if (idx >= 0) {
-        addresses[idx].tariffs = { ...tariffs };
-        addresses[idx].prefs = { ...prefs };
-        addresses[idx].customServices = [...customServices];
-      }
     }
 
     async function loadAddressRecords(addressId) {
@@ -477,7 +516,8 @@
         errEl.innerText =
           error.message === 'NOT_FOUND' ? 'Акаунт не знайдено' :
           error.message === 'WRONG_PASSWORD' ? 'Невірний пароль' :
-          'Помилка сервера';
+          error.message === 'MISSING_FIELDS' ? 'Введи логін і пароль' :
+          error.message;
         errEl.classList.remove('hidden');
       } finally {
         btn.disabled = false;
@@ -505,9 +545,77 @@
         await performRegister(login, password);
         showToast('Акаунт створено, тепер увійди', '🎉');
       } catch (e) {
-        showToast(e.message === 'ALREADY_EXISTS' ? 'Такий логін вже існує' : 'Помилка реєстрації', '⚠️');
+        showToast(e.message === 'ALREADY_EXISTS' ? 'Такий логін вже існує' : e.message, '⚠️');
       }
     });
+
+    window.openForgotModal = function() {
+      $('forgotError').classList.add('hidden');
+      $('forgotResultWrap').classList.add('hidden');
+      $('forgotLogin').value = $('authLogin').value.trim();
+      $('forgotModal').classList.remove('hidden');
+      setTimeout(() => $('forgotModalContent').classList.remove('translate-y-full'), 10);
+    };
+
+    window.closeForgotModal = function() {
+      $('forgotModalContent').classList.add('translate-y-full');
+      setTimeout(() => $('forgotModal').classList.add('hidden'), 300);
+    };
+
+    window.handleForgotPassword = async function() {
+      const login = $('forgotLogin').value.trim();
+      $('forgotError').classList.add('hidden');
+      $('forgotResultWrap').classList.add('hidden');
+
+      if (!login) {
+        $('forgotError').innerText = 'Введи логін';
+        $('forgotError').classList.remove('hidden');
+        return;
+      }
+
+      const btn = $('forgotSubmitBtn');
+      btn.disabled = true;
+      btn.innerText = 'Створення...';
+
+      try {
+        const data = await apiFetch('/api/auth/forgot-password', {
+          method: 'POST',
+          body: JSON.stringify({ login })
+        });
+
+        if (data.resetLink) {
+          $('forgotResultLink').value = data.resetLink;
+          $('forgotResultWrap').classList.remove('hidden');
+          showToast('Reset link створено', '🔗');
+        } else {
+          $('forgotError').innerText = 'Лінк не створено';
+          $('forgotError').classList.remove('hidden');
+        }
+      } catch (e) {
+        $('forgotError').innerText = e.message;
+        $('forgotError').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Створити лінк';
+      }
+    };
+
+    window.copyResetLink = async function() {
+      const val = $('forgotResultLink').value.trim();
+      if (!val) return;
+      try {
+        await navigator.clipboard.writeText(val);
+        showToast('Скопійовано', '📋');
+      } catch {
+        showToast('Не вдалося скопіювати', '⚠️');
+      }
+    };
+
+    window.openResetLink = function() {
+      const val = $('forgotResultLink').value.trim();
+      if (!val) return;
+      window.open(val, '_blank');
+    };
 
     function renderCalcCustomServices() {
       const c = $('customServicesContainer');
@@ -651,9 +759,9 @@
       try {
         await saveCurrentRecord();
         showToast('Збережено!', '✅');
-        switchTab('tabHistory', 1);
-      } catch {
-        showToast('Помилка збереження', '⚠️');
+        switchTab('tabHistory');
+      } catch (e2) {
+        showToast(e2.message, '⚠️');
       }
     });
 
@@ -683,7 +791,7 @@
       $('statsAvg').innerText = sorted.length ? `${fmt.format(sorted.reduce((s, r) => s + r.total, 0) / sorted.length)} ₴` : '0 ₴';
       renderChart(sorted);
 
-      $('recordsList').innerHTML = sorted.map((rec, index) => `
+      $('recordsList').innerHTML = sorted.map(rec => `
         <div class="bg-white dark:bg-apple-dark p-5 rounded-[2rem] shadow-soft border border-slate-100 dark:border-white/5">
           <div class="flex justify-between items-center mb-3">
             <div>
@@ -712,8 +820,8 @@
         await apiFetch(`/api/addresses/${currentAddressId}/records/${month}/paid`, { method: 'PATCH' });
         await loadAddressRecords(currentAddressId);
         renderRecords();
-      } catch {
-        showToast('Помилка', '⚠️');
+      } catch (e) {
+        showToast(e.message, '⚠️');
       }
     };
 
@@ -725,12 +833,12 @@
         renderRecords();
         fillPreviousReadings();
         calculatePreview();
-      } catch {
-        showToast('Помилка', '⚠️');
+      } catch (e) {
+        showToast(e.message, '⚠️');
       }
     };
 
-    window.switchTab = function(tabId, index = -1) {
+    window.switchTab = function(tabId) {
       document.querySelectorAll('.tab-transition').forEach(el => {
         el.classList.remove('tab-active');
         el.classList.add('tab-hidden');
@@ -738,15 +846,14 @@
       $(tabId).classList.remove('tab-hidden');
       $(tabId).classList.add('tab-active');
 
-      if (index >= 0) {
-        document.querySelectorAll('.nav-btn').forEach(el => {
-          el.classList.remove('text-brand');
-          el.classList.add('text-slate-400', 'dark:text-slate-500');
-        });
-        const btnId = tabId === 'tabCalc' ? 'btnTabCalc' : tabId === 'tabHistory' ? 'btnTabHistory' : 'btnTabSettings';
-        $(btnId).classList.remove('text-slate-400', 'dark:text-slate-500');
-        $(btnId).classList.add('text-brand');
-      }
+      document.querySelectorAll('.nav-btn').forEach(el => {
+        el.classList.remove('text-brand');
+        el.classList.add('text-slate-400', 'dark:text-slate-500');
+      });
+
+      const btnId = tabId === 'tabCalc' ? 'btnTabCalc' : tabId === 'tabHistory' ? 'btnTabHistory' : 'btnTabSettings';
+      $(btnId).classList.remove('text-slate-400', 'dark:text-slate-500');
+      $(btnId).classList.add('text-brand');
 
       if (tabId === 'tabHistory') renderRecords();
       if (tabId === 'tabSettings') renderSettingsCustomServices();
@@ -776,7 +883,6 @@
     }
 
     window.selectAddress = async function(id) {
-      syncCurrentAddressMemory();
       currentAddressId = id;
       await loadCurrentAddress();
       closeAddressModal();
@@ -801,8 +907,8 @@
         await loadCurrentAddress();
         closeAddressModal();
         showToast('Додано', '✅');
-      } catch {
-        showToast('Помилка', '⚠️');
+      } catch (e) {
+        showToast(e.message, '⚠️');
       }
     };
 
@@ -820,8 +926,8 @@
         if (i >= 0) addresses[i].name = data.address.name;
         if (currentAddressId === id) $('currentAddressDisplay').innerText = data.address.name;
         renderAddressModal();
-      } catch {
-        showToast('Помилка', '⚠️');
+      } catch (e2) {
+        showToast(e2.message, '⚠️');
       }
     };
 
@@ -865,8 +971,8 @@
 
         initAppUI();
         showToast('Налаштування збережено', '✅');
-      } catch {
-        showToast('Помилка', '⚠️');
+      } catch (e) {
+        showToast(e.message, '⚠️');
       }
     };
 
@@ -939,10 +1045,11 @@
     setThemeColor(activeThemeColor);
 
     if (authToken) {
-      bootstrapAfterLogin().catch(() => {
+      bootstrapAfterLogin().catch(err => {
         localStorage.removeItem('k_token');
         localStorage.removeItem('k_login');
         localStorage.removeItem('kprofile');
+        showToast(err.message, '⚠️');
       });
     }
   </script>
