@@ -1,59 +1,79 @@
-const STATIC_CACHE = "komunalka-static-v2";
+const CACHE_NAME = 'komunalka-pro-v1.0.0';
 const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./icon.png"
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.json',
+  './icon.png'
 ];
 
-self.addEventListener("install", event => {
-  self.skipWaiting();
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(cache => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
   );
+  self.skipWaiting();
 });
 
-self.addEventListener("activate", event => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(
-      keys.map(key => key !== STATIC_CACHE ? caches.delete(key) : Promise.resolve())
-    );
-    await self.clients.claim();
-  })());
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
 });
 
-self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
 
-  if (url.pathname.startsWith("/api/") || url.hostname.includes("workers.dev")) {
+  if (req.method !== 'GET') return;
+
+  if (url.origin !== location.origin) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({
-          success: false,
-          error: "OFFLINE_API_UNAVAILABLE"
-        }), {
-          status: 503,
-          headers: { "Content-Type": "application/json" }
-        });
-      })
+      fetch(req).catch(() => caches.match(req))
     );
     return;
   }
 
-  event.respondWith((async () => {
-    const cached = await caches.match(event.request);
+  if (
+    url.pathname.endsWith('/api') ||
+    url.pathname.includes('/api/')
+  ) {
+    event.respondWith(fetch(req));
+    return;
+  }
 
-    const networkFetch = fetch(event.request)
-      .then(res => {
-        if (res && res.status === 200) {
+  if (
+    req.mode === 'navigate' ||
+    req.destination === 'document'
+  ) {
+    event.respondWith(
+      fetch(req)
+        .then(res => {
           const copy = res.clone();
-          caches.open(STATIC_CACHE).then(cache => cache.put(event.request, copy));
-        }
-        return res;
-      })
-      .catch(() => cached);
+          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          return res;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
 
-    return cached || networkFetch;
-  })());
+  event.respondWith(
+    caches.match(req).then(cached => {
+      if (cached) return cached;
+
+      return fetch(req).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+        return res;
+      });
+    })
+  );
 });
