@@ -5,77 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Моя Комуналка</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3b82f6">
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-800">
+<body class="bg-gray-100 font-sans antialiased text-gray-800 h-screen flex flex-col">
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center">
-        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center">
-            <h1 class="text-2xl font-bold mb-6 text-blue-600">Комуналка</h1>
-            <button id="login-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200">
-                Увійти через Google
+    <div id="login-screen" class="min-h-screen flex items-center justify-center absolute inset-0 bg-gray-100 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center mx-4">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-house-chimney"></i>
+            </div>
+            <h1 class="text-2xl font-bold mb-2 text-gray-800">Комуналка</h1>
+            <p class="text-gray-500 text-sm mb-6">Зручний облік ваших витрат</p>
+            <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                <i class="fa-brands fa-google"></i> Увійти через Google
             </button>
         </div>
     </div>
 
-    <div id="app-screen" class="hidden min-h-screen pb-20">
-        <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
-            <h1 class="text-xl font-bold">Мої Показники</h1>
-            <div class="flex items-center gap-4">
-                <span id="user-name" class="text-sm opacity-80"></span>
-                <button id="logout-btn" class="text-sm bg-blue-700 px-3 py-1 rounded hover:bg-blue-800">Вийти</button>
+    <div id="app-screen" class="hidden flex-1 flex flex-col h-full">
+        <header class="bg-white text-gray-800 p-4 shadow-sm flex justify-between items-center sticky top-0 z-10">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-wallet text-blue-600"></i> Облік
+            </h1>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold" id="user-avatar"></div>
+                <button id="logout-btn" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
             </div>
         </header>
 
-        <main class="p-4 max-w-md mx-auto">
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6 shadow-sm">
-                <h2 class="font-bold text-blue-800">Прогноз на наступний місяць:</h2>
-                <p class="text-2xl font-black text-blue-600 mt-1" id="forecast-amount">Рахуємо...</p>
-                <p class="text-xs text-gray-500 mt-1">На основі попередніх записів</p>
+        <main class="p-4 max-w-md mx-auto w-full flex-1 overflow-y-auto pb-24">
+            
+            <div id="tab-input" class="block animate-fade-in">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-5 rounded-2xl mb-6 shadow-lg shadow-blue-200">
+                    <h2 class="text-blue-100 text-sm font-medium mb-1">Прогноз на наступний місяць</h2>
+                    <p class="text-3xl font-bold" id="forecast-amount">Рахуємо...</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold mb-4 text-gray-700">Поточний місяць</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-bolt text-yellow-500 w-4"></i> Електро (кВт)</label>
+                            <input type="number" id="electro" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-droplet text-blue-400 w-4"></i> Вода (куби)</label>
+                            <input type="number" id="water" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-fire text-orange-500 w-4"></i> Газ (куби)</label>
+                            <input type="number" id="gas" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-temperature-arrow-up text-red-400 w-4"></i> Опалення (грн)</label>
+                            <input type="number" id="heating" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-trash-can text-gray-400 w-4"></i> Сміття (грн)</label>
+                            <input type="number" id="garbage" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-wifi text-indigo-400 w-4"></i> Інтернет (грн)</label>
+                            <input type="number" id="internet" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
+                        </div>
+                    </div>
+
+                    <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md shadow-green-200">
+                        Зберегти показники
+                    </button>
+                </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h3 class="font-bold mb-4 border-b pb-2">Показники за поточний місяць</h3>
-                
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Електроенергія (кВт)</label>
-                        <input type="number" id="electro" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Вода (куби)</label>
-                        <input type="number" id="water" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Газ (куби)</label>
-                        <input type="number" id="gas" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Опалення (Гкал/грн)</label>
-                        <input type="number" id="heating" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
-                    </div>
+            <div id="tab-history" class="hidden animate-fade-in">
+                <h2 class="font-bold text-gray-800 mb-4 text-lg">Історія платежів</h2>
+                <div id="history-list" class="space-y-3">
+                    <div class="text-center text-gray-400 py-10">Завантаження...</div>
                 </div>
+            </div>
 
-                <h3 class="font-bold mb-4 border-b pb-2 mt-6">Фіксовані платежі (грн)</h3>
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Вивіз сміття</label>
-                        <input type="number" id="garbage" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Інтернет</label>
-                        <input type="number" id="internet" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
-                    </div>
-                </div>
+        </main>
 
-                <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded transition duration-200">
-                    Зберегти в базу
+        <nav class="bg-white border-t border-gray-200 fixed bottom-0 w-full max-w-md mx-auto left-0 right-0 z-20 pb-safe">
+            <div class="flex justify-around p-3">
+                <button id="nav-input" class="flex flex-col items-center text-blue-600 transition p-2">
+                    <i class="fa-solid fa-pen-to-square text-xl mb-1"></i>
+                    <span class="text-[10px] font-medium">Введення</span>
+                </button>
+                <button id="nav-history" class="flex flex-col items-center text-gray-400 hover:text-gray-600 transition p-2">
+                    <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i>
+                    <span class="text-[10px] font-medium">Історія</span>
                 </button>
             </div>
-        </main>
+        </nav>
     </div>
 
     <script type="module" src="app.js"></script>
+    <style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </body>
 </html>
