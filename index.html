@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя Комуналка</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <div id="login-screen" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center">
+            <h1 class="text-2xl font-bold mb-6 text-blue-600">Комуналка PWA</h1>
+            <p class="text-sm text-gray-500 mb-6">Увійдіть, щоб синхронізувати свої дані</p>
+            <button id="login-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+                Увійти через Google
+            </button>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden min-h-screen pb-20">
+        <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
+            <h1 class="text-xl font-bold">Мої Показники</h1>
+            <button id="logout-btn" class="text-sm underline">Вийти</button>
+        </header>
+
+        <main class="p-4 max-w-md mx-auto">
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6 shadow-sm">
+                <h2 class="font-bold text-blue-800">Прогноз на наступний місяць:</h2>
+                <p class="text-2xl font-black text-blue-600 mt-1" id="forecast-amount">~ 1 450 грн</p>
+                <p class="text-xs text-gray-500 mt-1">На основі середнього споживання за 3 місяці</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h3 class="font-bold mb-4">Внести показники за поточний місяць</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Електроенергія (кВт)</label>
+                    <input type="number" id="electro-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" placeholder="Наприклад, 150">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700">Вода (куби)</label>
+                    <input type="number" id="water-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" placeholder="Наприклад, 5">
+                </div>
+
+                <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    Зберегти дані
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
