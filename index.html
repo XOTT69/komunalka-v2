@@ -12,8 +12,7 @@
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center">
-            <h1 class="text-2xl font-bold mb-6 text-blue-600">Комуналка PWA</h1>
-            <p class="text-sm text-gray-500 mb-6">Увійдіть, щоб синхронізувати свої дані</p>
+            <h1 class="text-2xl font-bold mb-6 text-blue-600">Комуналка</h1>
             <button id="login-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200">
                 Увійти через Google
             </button>
@@ -23,36 +22,60 @@
     <div id="app-screen" class="hidden min-h-screen pb-20">
         <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
             <h1 class="text-xl font-bold">Мої Показники</h1>
-            <button id="logout-btn" class="text-sm underline">Вийти</button>
+            <div class="flex items-center gap-4">
+                <span id="user-name" class="text-sm opacity-80"></span>
+                <button id="logout-btn" class="text-sm bg-blue-700 px-3 py-1 rounded hover:bg-blue-800">Вийти</button>
+            </div>
         </header>
 
         <main class="p-4 max-w-md mx-auto">
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6 shadow-sm">
                 <h2 class="font-bold text-blue-800">Прогноз на наступний місяць:</h2>
-                <p class="text-2xl font-black text-blue-600 mt-1" id="forecast-amount">~ 1 450 грн</p>
-                <p class="text-xs text-gray-500 mt-1">На основі середнього споживання за 3 місяці</p>
+                <p class="text-2xl font-black text-blue-600 mt-1" id="forecast-amount">Рахуємо...</p>
+                <p class="text-xs text-gray-500 mt-1">На основі попередніх записів</p>
             </div>
 
             <div class="bg-white p-6 rounded-xl shadow-md">
-                <h3 class="font-bold mb-4">Внести показники за поточний місяць</h3>
+                <h3 class="font-bold mb-4 border-b pb-2">Показники за поточний місяць</h3>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Електроенергія (кВт)</label>
-                    <input type="number" id="electro-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" placeholder="Наприклад, 150">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Електроенергія (кВт)</label>
+                        <input type="number" id="electro" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Вода (куби)</label>
+                        <input type="number" id="water" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Газ (куби)</label>
+                        <input type="number" id="gas" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Опалення (Гкал/грн)</label>
+                        <input type="number" id="heating" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
+                    </div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700">Вода (куби)</label>
-                    <input type="number" id="water-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" placeholder="Наприклад, 5">
+                <h3 class="font-bold mb-4 border-b pb-2 mt-6">Фіксовані платежі (грн)</h3>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Вивіз сміття</label>
+                        <input type="number" id="garbage" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Інтернет</label>
+                        <input type="number" id="internet" class="mt-1 block w-full rounded border-gray-300 p-2 border focus:border-blue-500 outline-none">
+                    </div>
                 </div>
 
-                <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-200">
-                    Зберегти дані
+                <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded transition duration-200">
+                    Зберегти в базу
                 </button>
             </div>
         </main>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
