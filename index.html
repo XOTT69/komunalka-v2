@@ -3,33 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Моя Комуналка</title>
+    <title>Моя Комуналка PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3b82f6">
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-800 h-screen flex flex-col">
+<body class="bg-gray-50 font-sans antialiased text-gray-800 h-screen flex flex-col">
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center absolute inset-0 bg-gray-100 z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center mx-4">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-                <i class="fa-solid fa-house-chimney"></i>
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center mx-4 border border-gray-100">
+            <div class="w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg shadow-blue-200">
+                <i class="fa-solid fa-bolt"></i>
             </div>
-            <h1 class="text-2xl font-bold mb-2 text-gray-800">Комуналка</h1>
-            <p class="text-gray-500 text-sm mb-6">Зручний облік ваших витрат</p>
-            <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
-                <i class="fa-brands fa-google"></i> Увійти через Google
+            <h1 class="text-3xl font-black mb-2 text-gray-800">Комуналка <span class="text-blue-600">PRO</span></h1>
+            <p class="text-gray-500 text-sm mb-8">Розумний облік та прогнозування</p>
+            <button id="login-btn" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-4 rounded-2xl transition flex items-center justify-center gap-3">
+                <i class="fa-brands fa-google text-red-500"></i> Увійти через Google
             </button>
         </div>
     </div>
 
     <div id="app-screen" class="hidden flex-1 flex flex-col h-full">
-        <header class="bg-white text-gray-800 p-4 shadow-sm flex justify-between items-center sticky top-0 z-10">
-            <h1 class="text-xl font-bold flex items-center gap-2">
+        <header class="bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-10 border-b border-gray-100">
+            <h1 class="text-xl font-black flex items-center gap-2 text-gray-800">
                 <i class="fa-solid fa-wallet text-blue-600"></i> Облік
             </h1>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-4">
+                <button id="request-notify-btn" class="text-yellow-500 hidden" title="Увімкнути сповіщення"><i class="fa-solid fa-bell-slash"></i></button>
                 <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold" id="user-avatar"></div>
                 <button id="logout-btn" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
             </div>
@@ -39,88 +40,186 @@
             
             <div id="tab-input" class="block animate-fade-in">
                 
-                <div id="reminder-banner" class="hidden bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-xl mb-6 shadow-sm">
-                    <div class="flex items-center gap-2 text-yellow-800 font-bold mb-1">
-                        <i class="fa-solid fa-bell text-yellow-500 text-lg"></i> Час передати показники!
-                    </div>
-                    <p class="text-sm text-yellow-700">Не забудьте надіслати дані лічильників вашим постачальникам (світло, вода, газ).</p>
+                <div id="reminders-container" class="mb-4 space-y-2"></div>
+
+                <div class="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-6 rounded-3xl mb-6 shadow-xl relative overflow-hidden">
+                    <i class="fa-solid fa-chart-pie absolute -right-6 -bottom-6 text-8xl opacity-10"></i>
+                    <h2 class="text-gray-400 text-xs font-bold tracking-widest uppercase mb-1">Прогноз на наступний місяць</h2>
+                    <p class="text-4xl font-black" id="forecast-amount">Рахуємо...</p>
                 </div>
 
-                <div class="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-5 rounded-2xl mb-6 shadow-lg shadow-blue-200">
-                    <h2 class="text-blue-100 text-sm font-medium mb-1">Середній чек за комуналку</h2>
-                    <p class="text-3xl font-bold" id="forecast-amount">Рахуємо...</p>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    
-                    <div class="mb-5 bg-blue-50 p-3 rounded-xl border border-blue-100">
-                        <label class="block text-xs font-bold text-blue-800 mb-1"><i class="fa-solid fa-calendar-days"></i> Виберіть місяць та рік</label>
-                        <input type="month" id="record-month" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-blue-900 cursor-pointer">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                    <div class="mb-6 bg-gray-50 p-1 rounded-2xl flex border border-gray-200">
+                        <input type="month" id="record-month" class="w-full bg-transparent font-bold text-lg focus:outline-none text-center text-gray-800 cursor-pointer py-2">
                     </div>
 
-                    <h3 class="font-bold mb-4 text-gray-700 border-b pb-2">Показники лічильників</h3>
-                    
+                    <h3 class="font-bold mb-4 text-gray-400 text-xs uppercase tracking-wider">Лічильники</h3>
                     <div class="space-y-4 mb-6">
-                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-bolt text-yellow-500 w-4"></i> Електроенергія</label>
-                            <input type="number" id="electro-reading" class="w-full bg-transparent font-semibold text-xl focus:outline-none text-gray-800" placeholder="0">
-                            <div id="last-electro" class="text-[10px] text-gray-400 mt-1">Попередній: завантаження...</div>
+                        
+                        <div id="block-electro" class="bg-gray-50 p-4 rounded-2xl border border-gray-100 hidden">
+                            <div class="flex items-center gap-2 mb-3 text-sm font-bold text-gray-700">
+                                <i class="fa-solid fa-bolt text-yellow-500 w-4"></i> Електроенергія
+                            </div>
+                            
+                            <div id="electro-single-input">
+                                <input type="number" id="electro-reading" class="w-full bg-white rounded-xl border border-gray-200 p-3 font-semibold text-xl focus:border-blue-500 outline-none transition" placeholder="Показник">
+                                <div id="last-electro" class="text-xs text-gray-400 mt-2 px-1">Попередній: ...</div>
+                            </div>
+
+                            <div id="electro-twozone-inputs" class="hidden space-y-3">
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-xs font-bold text-orange-400 w-12">ДЕНЬ</span>
+                                    <div class="flex-1">
+                                        <input type="number" id="electro-day-reading" class="w-full bg-white rounded-xl border border-gray-200 p-2 font-semibold text-lg focus:border-orange-500 outline-none transition" placeholder="Показник (День)">
+                                        <div id="last-electro-day" class="text-[10px] text-gray-400 mt-1 px-1">Попередній: ...</div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-xs font-bold text-indigo-400 w-12">НІЧ</span>
+                                    <div class="flex-1">
+                                        <input type="number" id="electro-night-reading" class="w-full bg-white rounded-xl border border-gray-200 p-2 font-semibold text-lg focus:border-indigo-500 outline-none transition" placeholder="Показник (Ніч)">
+                                        <div id="last-electro-night" class="text-[10px] text-gray-400 mt-1 px-1">Попередній: ...</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-droplet text-blue-400 w-4"></i> Вода</label>
-                            <input type="number" id="water-reading" class="w-full bg-transparent font-semibold text-xl focus:outline-none text-gray-800" placeholder="0">
-                            <div id="last-water" class="text-[10px] text-gray-400 mt-1">Попередній: завантаження...</div>
+                        <div id="block-water" class="bg-gray-50 p-4 rounded-2xl border border-gray-100 hidden">
+                            <label class="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-droplet text-blue-400 w-4"></i> Вода</label>
+                            <input type="number" id="water-reading" class="w-full bg-white rounded-xl border border-gray-200 p-3 font-semibold text-xl focus:border-blue-500 outline-none transition" placeholder="Показник">
+                            <div id="last-water" class="text-xs text-gray-400 mt-2 px-1">Попередній: ...</div>
                         </div>
 
-                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-fire text-orange-500 w-4"></i> Газ</label>
-                            <input type="number" id="gas-reading" class="w-full bg-transparent font-semibold text-xl focus:outline-none text-gray-800" placeholder="0">
-                            <div id="last-gas" class="text-[10px] text-gray-400 mt-1">Попередній: завантаження...</div>
+                        <div id="block-gas" class="bg-gray-50 p-4 rounded-2xl border border-gray-100 hidden">
+                            <label class="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-fire text-orange-500 w-4"></i> Газ</label>
+                            <input type="number" id="gas-reading" class="w-full bg-white rounded-xl border border-gray-200 p-3 font-semibold text-xl focus:border-blue-500 outline-none transition" placeholder="Показник">
+                            <div id="last-gas" class="text-xs text-gray-400 mt-2 px-1">Попередній: ...</div>
                         </div>
                     </div>
 
-                    <h3 class="font-bold mb-4 text-gray-700 border-b pb-2">Суми в гривнях (Фіксовані)</h3>
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-temperature-arrow-up text-red-400 w-4"></i> Опалення</label>
-                            <input type="number" id="heating" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-trash-can text-gray-400 w-4"></i> Сміття</label>
-                            <input type="number" id="garbage" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 col-span-2">
-                            <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-wifi text-indigo-400 w-4"></i> Інтернет</label>
-                            <input type="number" id="internet" class="w-full bg-transparent font-semibold text-lg focus:outline-none text-gray-800" placeholder="0">
+                    <div id="fixed-services-container">
+                        <h3 class="font-bold mb-4 text-gray-400 text-xs uppercase tracking-wider">Фіксовані суми (₴)</h3>
+                        <div class="grid grid-cols-2 gap-3 mb-6">
+                            <div id="block-heating" class="hidden">
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Опалення</label>
+                                <input type="number" id="heating" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-3 font-semibold focus:border-blue-500 outline-none" placeholder="0">
+                            </div>
+                            <div id="block-garbage" class="hidden">
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Сміття</label>
+                                <input type="number" id="garbage" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-3 font-semibold focus:border-blue-500 outline-none" placeholder="0">
+                            </div>
+                            <div id="block-internet" class="hidden col-span-2">
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Інтернет</label>
+                                <input type="number" id="internet" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-3 font-semibold focus:border-blue-500 outline-none" placeholder="0">
+                            </div>
                         </div>
                     </div>
 
-                    <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md shadow-green-200">
-                        Зберегти показники
+                    <button id="save-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-2xl transition shadow-lg shadow-blue-200">
+                        Зберегти дані
                     </button>
                 </div>
             </div>
 
             <div id="tab-history" class="hidden animate-fade-in">
-                <h2 class="font-bold text-gray-800 mb-4 text-lg">Історія платежів</h2>
-                <div id="history-list" class="space-y-3">
+                <h2 class="font-black text-gray-800 mb-4 text-2xl">Історія</h2>
+                <div id="history-list" class="space-y-4">
                     <div class="text-center text-gray-400 py-10">Завантаження...</div>
                 </div>
             </div>
 
+            <div id="tab-settings" class="hidden animate-fade-in">
+                <h2 class="font-black text-gray-800 mb-4 text-2xl">Налаштування</h2>
+
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-4">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-500"></i> Електроенергія</h3>
+                    
+                    <label class="flex items-center justify-between mb-4 bg-gray-50 p-3 rounded-xl cursor-pointer">
+                        <span class="text-sm font-semibold text-gray-700">Двозонний лічильник (День/Ніч)</span>
+                        <input type="checkbox" id="setting-twozone" class="w-5 h-5 accent-blue-600 cursor-pointer">
+                    </label>
+
+                    <label class="flex items-center justify-between mb-4 bg-gray-50 p-3 rounded-xl cursor-pointer">
+                        <span class="text-sm font-semibold text-gray-700">Пільга на опалення (Зима)</span>
+                        <input type="checkbox" id="setting-winter" class="w-5 h-5 accent-blue-600 cursor-pointer">
+                    </label>
+
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Тариф (або День)</label>
+                            <input type="number" step="0.01" id="tariff-electro" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-2 font-semibold outline-none focus:border-blue-500">
+                        </div>
+                        <div id="night-tariff-container" class="opacity-50 pointer-events-none transition">
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Тариф Ніч</label>
+                            <input type="number" step="0.01" id="tariff-electro-night" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-2 font-semibold outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-4">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-coins text-green-500"></i> Інші послуги</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="show-water" class="w-5 h-5 accent-blue-600">
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-700">Вода (₴/куб)</label>
+                                <input type="number" step="0.01" id="tariff-water" class="w-full bg-gray-50 border-b-2 border-gray-200 p-1 font-semibold outline-none focus:border-blue-500 mt-1">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="show-gas" class="w-5 h-5 accent-blue-600">
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-700">Газ (₴/куб)</label>
+                                <input type="number" step="0.01" id="tariff-gas" class="w-full bg-gray-50 border-b-2 border-gray-200 p-1 font-semibold outline-none focus:border-blue-500 mt-1">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3"><input type="checkbox" id="show-heating" class="w-5 h-5 accent-blue-600"><span class="text-sm font-bold text-gray-700">Опалення (Фіксовано)</span></div>
+                        <div class="flex items-center gap-3"><input type="checkbox" id="show-garbage" class="w-5 h-5 accent-blue-600"><span class="text-sm font-bold text-gray-700">Сміття (Фіксовано)</span></div>
+                        <div class="flex items-center gap-3"><input type="checkbox" id="show-internet" class="w-5 h-5 accent-blue-600"><span class="text-sm font-bold text-gray-700">Інтернет (Фіксовано)</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-bell text-red-400"></i> Нагадування (Дні місяця)</h3>
+                    <p class="text-xs text-gray-500 mb-4">Вкажіть проміжок дат (наприклад: 1-5), щоб додаток нагадував передати показники.</p>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 text-center mb-1 uppercase">Світло</label>
+                            <input type="text" id="remind-electro" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-2 text-center text-sm font-bold outline-none" placeholder="1-5">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 text-center mb-1 uppercase">Вода</label>
+                            <input type="text" id="remind-water" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-2 text-center text-sm font-bold outline-none" placeholder="1-5">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 text-center mb-1 uppercase">Газ</label>
+                            <input type="text" id="remind-gas" class="w-full bg-gray-50 rounded-xl border border-gray-200 p-2 text-center text-sm font-bold outline-none" placeholder="1-5">
+                        </div>
+                    </div>
+                </div>
+
+                <button id="save-settings-btn" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-4 rounded-2xl transition shadow-lg mb-8">
+                    Зберегти налаштування
+                </button>
+            </div>
+
         </main>
 
-        <nav class="bg-white border-t border-gray-200 fixed bottom-0 w-full max-w-md mx-auto left-0 right-0 z-20 pb-safe shadow-[0_-5px_15px_-10px_rgba(0,0,0,0.1)]">
-            <div class="flex justify-around p-3">
-                <button id="nav-input" class="flex flex-col items-center text-blue-600 transition p-2 w-full">
+        <nav class="bg-white border-t border-gray-100 fixed bottom-0 w-full max-w-md mx-auto left-0 right-0 z-20 pb-safe shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] rounded-t-3xl">
+            <div class="flex justify-around p-2">
+                <button class="nav-btn flex flex-col items-center text-blue-600 transition p-3 w-full rounded-2xl hover:bg-blue-50" data-target="tab-input">
                     <i class="fa-solid fa-pen-to-square text-xl mb-1"></i>
-                    <span class="text-[10px] font-medium">Введення</span>
+                    <span class="text-[10px] font-bold">Введення</span>
                 </button>
-                <button id="nav-history" class="flex flex-col items-center text-gray-400 hover:text-gray-600 transition p-2 w-full">
+                <button class="nav-btn flex flex-col items-center text-gray-400 transition p-3 w-full rounded-2xl hover:bg-gray-50" data-target="tab-history">
                     <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i>
-                    <span class="text-[10px] font-medium">Історія</span>
+                    <span class="text-[10px] font-bold">Історія</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center text-gray-400 transition p-3 w-full rounded-2xl hover:bg-gray-50" data-target="tab-settings">
+                    <i class="fa-solid fa-gear text-xl mb-1"></i>
+                    <span class="text-[10px] font-bold">Налашт.</span>
                 </button>
             </div>
         </nav>
@@ -129,9 +228,8 @@
     <script type="module" src="app.js"></script>
     <style>
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-        .animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        /* Ховаємо стрілочки в інпутах */
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </body>
