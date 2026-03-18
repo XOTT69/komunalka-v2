@@ -1,60 +1,40 @@
-const CACHE_NAME = 'komunalka-pwa-v1';
+const CACHE_NAME = 'komunalka-pwa-dynamic';
 
-// Список файлів, які потрібно зберегти для роботи офлайн
-const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/app.js',
-    '/manifest.json'
-    // Якщо ви додасте свої картинки/іконки, їх теж треба вписати сюди, наприклад:
-    // '/icons/icon-512.png'
-];
-
-// Етап 1: Встановлення (Install) - завантажуємо файли в кеш
+// Етап 1: Встановлення (миттєве оновлення без очікування)
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] Кешування файлів...');
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
-    );
-    self.skipWaiting();
+    self.skipWaiting(); // Змушуємо новий Service Worker активуватися миттєво
 });
 
-// Етап 2: Активація (Activate) - видаляємо старий кеш, якщо версія оновилася
+// Етап 2: Активація (одразу беремо під контроль всі відкриті вкладки)
 self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cache) => {
-                    if (cache !== CACHE_NAME) {
-                        console.log('[Service Worker] Очищення старого кешу...');
-                        return caches.delete(cache);
-                    }
-                })
-            );
-        })
-    );
-    self.clients.claim();
+    event.waitUntil(self.clients.claim());
 });
 
-// Етап 3: Перехоплення запитів (Fetch)
+// Етап 3: Перехоплення запитів (Стратегія: Network First, Fallback to Cache)
 self.addEventListener('fetch', (event) => {
-    // Ми НЕ кешуємо запити до Firebase (авторизація, база даних), 
-    // оскільки Firebase SDK має власну систему роботи офлайн.
+    // Ігноруємо запити до бази даних Firebase, щоб не кешувати чутливі дані
     if (event.request.url.includes('firestore.googleapis.com') || 
         event.request.url.includes('identitytoolkit.googleapis.com')) {
-        return; // Пропускаємо такі запити до мережі
+        return;
     }
 
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            // Якщо файл є в кеші (наприклад, index.html) - віддаємо його миттєво.
-            // Якщо немає - завантажуємо з інтернету.
-            return cachedResponse || fetch(event.request);
-        }).catch(() => {
-            // Тут можна додати резервну сторінку, якщо офлайн і файлу немає в кеші
-            console.log('[Service Worker] Ресурс недоступний офлайн');
-        })
+        // КРОК 1: Завжди пробуємо завантажити свіжу версію з інтернету
+        fetch(event.request)
+            .then((networkResponse) => {
+                // Якщо інтернет є і файл успішно завантажено:
+                // Зберігаємо його свіжу копію в кеш для майбутнього офлайну
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
+                }
+                return networkResponse; // Віддаємо свіжий файл користувачу
+            })
+            .catch(() => {
+                // КРОК 2: Якщо інтернету немає (fetch видав помилку) - дістаємо з кешу
+                return caches.match(event.request);
+            })
     );
 });
