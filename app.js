@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-// ВИКОРИСТОВУЄМО setDoc замість addDoc для захисту від дублів!
 import { getFirestore, collection, doc, setDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -38,24 +37,17 @@ let currentUser = null;
 let pastReadings = null; 
 const TARIFFS = { electro: 2.64, water: 30.38, gas: 7.96 }; 
 
-// --- ІНІЦІАЛІЗАЦІЯ ДАТИ ТА НАГАДУВАНЬ ---
-function initDateAndReminders() {
+// --- ІНІЦІАЛІЗАЦІЯ ---
+function initDate() {
     const today = new Date();
-    // Встановлюємо поточний місяць в інпут за замовчуванням (формат YYYY-MM)
     const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     monthInput.value = currentMonthStr;
-
-    // Показуємо банер нагадування, якщо сьогодні з 1 по 5 число
-    if (today.getDate() >= 1 && today.getDate() <= 5) {
-        document.getElementById('reminder-banner').classList.remove('hidden');
-    }
 }
-initDateAndReminders();
+initDate();
 
-// Перерахунок попередніх показників при зміні місяця
 monthInput.addEventListener('change', updateLastReadingsUI);
 
-// --- 1. АВТОРИЗАЦІЯ ---
+// --- АВТОРИЗАЦІЯ ---
 loginBtn.addEventListener('click', () => {
     signInWithPopup(auth, new GoogleAuthProvider()).catch(err => alert("Помилка входу"));
 });
@@ -68,7 +60,6 @@ onAuthStateChanged(auth, (user) => {
         loginScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
         userAvatarEl.textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
-        
         updateLastReadingsUI();
         calculateForecast();
     } else {
@@ -78,7 +69,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// --- 2. НАВІГАЦІЯ (ПРАЦЮЄ БЕЗВІДМОВНО) ---
+// --- НАВІГАЦІЯ ---
 navInput.addEventListener('click', () => {
     tabInput.classList.remove('hidden'); tabHistory.classList.add('hidden');
     navInput.classList.replace('text-gray-400', 'text-blue-600'); 
@@ -93,26 +84,34 @@ navHistory.addEventListener('click', () => {
     loadHistory(); 
 });
 
-// --- ДОПОМІЖНА ФУНКЦІЯ: БЕЗПЕЧНЕ ОТРИМАННЯ ДАНИХ БЕЗ ІНДЕКСІВ FIREBASE ---
+// --- БАЗА ДАНИХ (БЕЗПЕЧНЕ ЧИТАННЯ) ---
 async function getUserRecords() {
-    // Беремо всі записи користувача і сортуємо їх програмно (швидко і без помилок бази)
-    const q = query(collection(db, "utilities"), where("userId", "==", currentUser.uid));
-    const snapshot = await getDocs(q);
-    let records = [];
-    snapshot.forEach(d => records.push(d.data()));
-    // Сортуємо від найновіших до найстаріших (формат YYYY-MM чудово сортується як текст)
-    records.sort((a, b) => b.date.localeCompare(a.date));
-    return records;
+    try {
+        const q = query(collection(db, "utilities"), where("userId", "==", currentUser.uid));
+        const snapshot = await getDocs(q);
+        let records = [];
+        snapshot.forEach(d => {
+            const data = d.data();
+            // ЗАХИСТ: Відкидаємо старі записи, де споживання аномально велике (більше 5000) - це старі глюки
+            if (data.electro < 5000 && data.water < 1000 && data.gas < 1000) {
+                records.push(data);
+            }
+        });
+        records.sort((a, b) => b.date.localeCompare(a.date));
+        return records;
+    } catch (e) {
+        console.error("Помилка завантаження з бази: ", e);
+        return [];
+    }
 }
 
-// --- 3. ОТРИМАННЯ ПОПЕРЕДНІХ ПОКАЗНИКІВ ---
+// --- ОТРИМАННЯ ПОПЕРЕДНІХ ПОКАЗНИКІВ ---
 async function updateLastReadingsUI() {
     if (!currentUser) return;
     
-    const selectedDate = monthInput.value; // Наприклад "2026-04"
+    const selectedDate = monthInput.value; 
     const records = await getUserRecords();
     
-    // Шукаємо найсвіжіший запис, який був ДО вибраного місяця
     const past = records.find(r => r.date < selectedDate);
     
     if (past) {
@@ -128,7 +127,7 @@ async function updateLastReadingsUI() {
     }
 }
 
-// --- 4. ЗБЕРЕЖЕННЯ ДАНИХ ---
+// --- ЗБЕРЕЖЕННЯ ---
 saveBtn.addEventListener('click', async () => {
     if (!currentUser) return;
     
@@ -139,11 +138,10 @@ saveBtn.addEventListener('click', async () => {
     const currentWater = Number(document.getElementById('water-reading').value) || 0;
     const currentGas = Number(document.getElementById('gas-reading').value) || 0;
 
-    // Перевірка на помилки вводу
     if (pastReadings) {
-        if (currentElectro > 0 && currentElectro < pastReadings.electroReading) { alert("Помилка: Нове світло менше за попереднє!"); return; }
-        if (currentWater > 0 && currentWater < pastReadings.waterReading) { alert("Помилка: Нова вода менша за попередню!"); return; }
-        if (currentGas > 0 && currentGas < pastReadings.gasReading) { alert("Помилка: Новий газ менший за попередній!"); return; }
+        if (currentElectro > 0 && currentElectro < pastReadings.electroReading) { alert("Нове світло менше за попереднє!"); return; }
+        if (currentWater > 0 && currentWater < pastReadings.waterReading) { alert("Нова вода менша за попередню!"); return; }
+        if (currentGas > 0 && currentGas < pastReadings.gasReading) { alert("Новий газ менший за попередній!"); return; }
     }
 
     const consumedElectro = pastReadings ? (currentElectro > 0 ? currentElectro - pastReadings.electroReading : 0) : 0;
@@ -168,17 +166,13 @@ saveBtn.addEventListener('click', async () => {
         saveBtn.textContent = "Зберігаємо...";
         saveBtn.disabled = true;
 
-        // Створюємо унікальний ID документа "Користувач_Місяць"
         const docId = `${currentUser.uid}_${selectedDate}`;
         const docRef = doc(db, "utilities", docId);
-        
-        // setDoc з merge: true оновить існуючий запис або створить новий!
         await setDoc(docRef, data, { merge: true });
         
         saveBtn.textContent = "Збережено!";
         saveBtn.classList.replace('bg-green-500', 'bg-blue-500');
         
-        // Очищаємо інпути (крім місяця)
         document.querySelectorAll('#tab-input input[type="number"]').forEach(i => i.value = '');
         
         setTimeout(() => {
@@ -192,14 +186,15 @@ saveBtn.addEventListener('click', async () => {
 
     } catch (e) {
         console.error("Помилка збереження: ", e);
-        alert("Сталася помилка збереження.");
+        alert("Помилка бази. Перевірте Firestore Rules (Крок 1)!");
         saveBtn.textContent = "Зберегти показники";
         saveBtn.disabled = false;
     }
 });
 
-// --- 5. ІСТОРІЯ ТА ПРОГНОЗ ---
+// --- ФОРМАТУВАННЯ ТА ІСТОРІЯ ---
 function formatMonthUI(yyyyMm) {
+    if (!yyyyMm) return "Невідомо";
     const [year, month] = yyyMm.split('-');
     const date = new Date(year, month - 1);
     return date.toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' });
@@ -211,7 +206,6 @@ async function calculateForecast() {
         const records = await getUserRecords();
         let totalCost = 0; let count = 0;
 
-        // Беремо до 3 останніх записів для розрахунку середнього
         const lastThree = records.slice(0, 3);
         
         lastThree.forEach((d) => {
@@ -260,7 +254,10 @@ async function loadHistory() {
             `;
             historyList.insertAdjacentHTML('beforeend', card);
         });
-    } catch (e) { historyList.innerHTML = '<div class="text-center text-red-400 py-10">Помилка завантаження</div>'; }
+    } catch (e) { 
+        historyList.innerHTML = '<div class="text-center text-red-400 py-10">Помилка завантаження. Перевірте консоль (F12).</div>'; 
+        console.error(e);
+    }
 }
 
 // Service Worker (PWA)
