@@ -71,14 +71,16 @@ onAuthStateChanged(auth, (user) => {
 
 // --- НАВІГАЦІЯ ---
 navInput.addEventListener('click', () => {
-    tabInput.classList.remove('hidden'); tabHistory.classList.add('hidden');
+    tabInput.classList.remove('hidden'); 
+    tabHistory.classList.add('hidden');
     navInput.classList.replace('text-gray-400', 'text-blue-600'); 
     navHistory.classList.replace('text-blue-600', 'text-gray-400');
     updateLastReadingsUI();
 });
 
 navHistory.addEventListener('click', () => {
-    tabHistory.classList.remove('hidden'); tabInput.classList.add('hidden');
+    tabHistory.classList.remove('hidden'); 
+    tabInput.classList.add('hidden');
     navHistory.classList.replace('text-gray-400', 'text-blue-600'); 
     navInput.classList.replace('text-blue-600', 'text-gray-400');
     loadHistory(); 
@@ -92,7 +94,7 @@ async function getUserRecords() {
         let records = [];
         snapshot.forEach(d => {
             const data = d.data();
-            // ЗАХИСТ: Відкидаємо старі записи, де споживання аномально велике (більше 5000) - це старі глюки
+            // ЗАХИСТ: Відкидаємо старі записи, де споживання аномально велике (більше 5000)
             if (data.electro < 5000 && data.water < 1000 && data.gas < 1000) {
                 records.push(data);
             }
@@ -186,17 +188,20 @@ saveBtn.addEventListener('click', async () => {
 
     } catch (e) {
         console.error("Помилка збереження: ", e);
-        alert("Помилка бази. Перевірте Firestore Rules (Крок 1)!");
+        alert("Помилка бази. Перевірте Firestore Rules!");
         saveBtn.textContent = "Зберегти показники";
         saveBtn.disabled = false;
     }
 });
 
-// --- ФОРМАТУВАННЯ ТА ІСТОРІЯ ---
-function formatMonthUI(yyyyMm) {
-    if (!yyyyMm) return "Невідомо";
-    const [year, month] = yyyMm.split('-');
-    const date = new Date(year, month - 1);
+// --- ФОРМАТУВАННЯ ТА ІСТОРІЯ (ВИПРАВЛЕНО) ---
+function formatMonthUI(dateString) {
+    if (!dateString) return "Невідомо";
+    const parts = dateString.split('-');
+    if (parts.length !== 2) return dateString; // Захист від неправильного формату
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Місяці в JS починаються з 0
+    const date = new Date(year, month);
     return date.toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' });
 }
 
